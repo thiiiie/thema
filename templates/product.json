@@ -1,1 +1,210 @@
-{"sections":{"main":{"type":"main-product","blocks":{"areviews_reviews_importer_areviews_title_rating_BbKJR8":{"type":"shopify:\/\/apps\/areviews-reviews-importer\/blocks\/AreviewsTitleRating\/ab0ec5fe-c95b-4fd6-bfb8-db2a30d0756f","settings":{}},"vendor":{"type":"vendor","disabled":true,"settings":{}},"title":{"type":"title","settings":{"heading_tag":"h2"}},"badges":{"type":"badges","settings":{}},"unlimited_bundles_embed_all_DmrVmW":{"type":"shopify:\/\/apps\/unlimited-bundles\/blocks\/embed-all\/d33d0f48-dee0-42a0-b156-2a5dce91814a","disabled":true,"settings":{}},"rating":{"type":"rating","settings":{"show_empty":false}},"separator":{"type":"separator","settings":{}},"variant_picker":{"type":"variant_picker","settings":{"hide_sold_out_variants":false,"stack_blocks":true,"selector_mode":"block","color_mode":"variant","size_chart_page":""}},"price":{"type":"price","settings":{"show_taxes_notice":false}},"quantity_selector":{"type":"quantity_selector","disabled":true,"settings":{}},"payment_terms":{"type":"payment_terms","settings":{}},"buy_buttons":{"type":"buy_buttons","settings":{"show_payment_button":false,"show_gift_card_recipient":true,"atc_button_background":"#2e9e7b","atc_button_text_color":"#ffffff","payment_button_background":"","payment_button_text_color":"","atc_button_text":"COMPRAR AGORA"}},"payment_meths":{"type":"payment_meths","settings":{}},"separator_pb6qVT":{"type":"separator","settings":{}},"shipping_warranty_return":{"type":"shipping_warranty_return","disabled":true,"settings":{}},"description":{"type":"description","settings":{"collapse_content":false}}},"block_order":["areviews_reviews_importer_areviews_title_rating_BbKJR8","vendor","title","badges","unlimited_bundles_embed_all_DmrVmW","rating","separator","variant_picker","price","quantity_selector","payment_terms","buy_buttons","payment_meths","separator_pb6qVT","shipping_warranty_return","description"],"settings":{"full_width":true,"show_fixed_add_to_cart":true,"desktop_media_width":50,"desktop_media_layout":"carousel_thumbnails_left","mobile_media_size":"expanded","mobile_carousel_control":"thumbnails","enable_video_autoplay":false,"enable_video_looping":true,"enable_image_zoom":true,"max_image_zoom_level":3,"strong_color":"#6c6c6c","background":"","background_gradient":"","text_color":"","input_background":"rgba(0,0,0,0)","input_text_color":"","product_card_text_color":"","enable_shipping":true,"shipping_city":"São Paulo - SP","shipping_city_amount":"Grátis","enable_warranty":true,"warranty_duration_text":"3 meses","enable_return":true,"return_days":14,"review_1":true,"review_2":true,"review_3":true,"review_background":"#ffffff","review_text_color":"#1a1a1a","review_answer_color":"#9e9999","review_star_color":"#ffd700","reviews_customer_1":"Marcela Cruz","reviews_customer_2":"Marcelo R.","reviews_customer_3":"Marcos E.","reviews_coment_1":"Atendimento maravilhoso e o produto é exatamente o que eu queria.","reviews_coment_2":"Qualidade excelente. É uma sensação boa e se ajusta perfeitamente! Altamente recomendado!","reviews_coment_3":"Superou minhas expectativas, ótimo produto e chegou rapidamente.","reviews_star_1":5,"reviews_star_2":4,"reviews_star_3":5}},"1629746450643786911":{"type":"areviews-section","settings":{"hide_areviews_title_rating":false,"areviews_theme_font":"inherit","areviews_stars_colors":"#f3c621","areviews_write_reviews_botton_color":"#373737"}},"17127627190b380007":{"type":"apps","blocks":{"areviews_reviews_importer_areviews_display_reviews_RTzXm3":{"type":"shopify:\/\/apps\/areviews-reviews-importer\/blocks\/AreviewsDisplayReviews\/ab0ec5fe-c95b-4fd6-bfb8-db2a30d0756f","settings":{"hide_areviews_title_rating":false,"areviews_theme_font":"inherit","areviews_stars_colors":"#f3c621","areviews_write_reviews_botton_color":"#373737"}}},"block_order":["areviews_reviews_importer_areviews_display_reviews_RTzXm3"],"settings":{"full_width":true,"remove_vertical_spacing":false,"remove_horizontal_spacing":false,"background":"","background_gradient":"","text_color":"","enable_review_integration":true,"review_header_gradient":"linear-gradient(135deg, rgba(255, 194, 102, 1), rgba(255, 163, 26, 1) 100%)","review_header_text_color":"#000000","review_button_background":"#000000","review_button_text_color":"#ffffff"}},"related-products":{"type":"related-products","settings":{"recommendations_count":9,"products":[],"full_width":true,"stack_products":true,"show_progress_bar":false,"products_per_row_mobile":"1","products_per_row_desktop":3,"subheading":"","title":"Leve estes também","content":"","background":"","background_gradient":"","text_color":"","heading_color":"","heading_gradient":"","product_card_background":"","product_card_text_color":""}}},"order":["main","1629746450643786911","17127627190b380007","related-products"]}
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "vendor": {
+          "type": "vendor",
+          "disabled": true,
+          "settings": {}
+        },
+        "title": {
+          "type": "title",
+          "settings": {
+            "heading_tag": "h2"
+          }
+        },
+        "badges": {
+          "type": "badges",
+          "settings": {}
+        },
+        "rating": {
+          "type": "rating",
+          "settings": {
+            "show_empty": false
+          }
+        },
+        "separator": {
+          "type": "separator",
+          "settings": {}
+        },
+        "variant_picker": {
+          "type": "variant_picker",
+          "settings": {
+            "hide_sold_out_variants": false,
+            "stack_blocks": true,
+            "selector_mode": "block",
+            "color_mode": "variant",
+            "size_chart_page": ""
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {
+            "show_taxes_notice": false
+          }
+        },
+        "quantity_selector": {
+          "type": "quantity_selector",
+          "disabled": true,
+          "settings": {}
+        },
+        "payment_terms": {
+          "type": "payment_terms",
+          "settings": {}
+        },
+        "buy_buttons": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_payment_button": false,
+            "show_gift_card_recipient": false,
+            "atc_button_background": "#2e9e7b",
+            "atc_button_text_color": "#ffffff",
+            "payment_button_background": "",
+            "payment_button_text_color": "",
+            "atc_button_text": "COMPRAR AGORA"
+          }
+        },
+        "payment_meths": {
+          "type": "payment_meths",
+          "settings": {}
+        },
+        "separator_pb6qVT": {
+          "type": "separator",
+          "settings": {}
+        },
+        "shipping_warranty_return": {
+          "type": "shipping_warranty_return",
+          "disabled": true,
+          "settings": {}
+        },
+        "description": {
+          "type": "description",
+          "settings": {
+            "collapse_content": false
+          }
+        }
+      },
+      "block_order": [
+        "vendor",
+        "title",
+        "badges",
+        "rating",
+        "separator",
+        "variant_picker",
+        "price",
+        "quantity_selector",
+        "payment_terms",
+        "buy_buttons",
+        "payment_meths",
+        "separator_pb6qVT",
+        "shipping_warranty_return",
+        "description"
+      ],
+      "settings": {
+        "full_width": true,
+        "show_fixed_add_to_cart": true,
+        "desktop_media_width": 50,
+        "desktop_media_layout": "carousel_thumbnails_left",
+        "mobile_media_size": "expanded",
+        "mobile_carousel_control": "thumbnails",
+        "enable_video_autoplay": false,
+        "enable_video_looping": true,
+        "enable_image_zoom": true,
+        "max_image_zoom_level": 3,
+        "strong_color": "#6c6c6c",
+        "background": "",
+        "background_gradient": "",
+        "text_color": "",
+        "input_background": "rgba(0,0,0,0)",
+        "input_text_color": "",
+        "product_card_text_color": "",
+        "enable_shipping": true,
+        "shipping_city": "São Paulo - SP",
+        "shipping_city_amount": "Grátis",
+        "enable_warranty": true,
+        "warranty_duration_text": "3 meses",
+        "enable_return": true,
+        "return_days": 14,
+        "review_1": true,
+        "review_2": true,
+        "review_3": true,
+        "review_background": "#ffffff",
+        "review_text_color": "#1a1a1a",
+        "review_answer_color": "#9e9999",
+        "review_star_color": "#ffd700",
+        "reviews_customer_1": "Marcela Cruz",
+        "reviews_customer_2": "Marcelo R.",
+        "reviews_customer_3": "Marcos E.",
+        "reviews_coment_1": "Atendimento maravilhoso e o produto é exatamente o que eu queria.",
+        "reviews_coment_2": "Qualidade excelente. É uma sensação boa e se ajusta perfeitamente! Altamente recomendado!",
+        "reviews_coment_3": "Superou minhas expectativas, ótimo produto e chegou rapidamente.",
+        "reviews_star_1": 5,
+        "reviews_star_2": 4,
+        "reviews_star_3": 5
+      }
+    },
+    "1629746450643786911": {
+      "type": "areviews-section",
+      "settings": {
+        "hide_areviews_title_rating": false,
+        "areviews_theme_font": "inherit",
+        "areviews_stars_colors": "#f3c621",
+        "areviews_write_reviews_botton_color": "#373737"
+      }
+    },
+    "17127627190b380007": {
+      "type": "apps",
+      "settings": {
+        "full_width": true,
+        "remove_vertical_spacing": false,
+        "remove_horizontal_spacing": false,
+        "background": "",
+        "background_gradient": "",
+        "text_color": "",
+        "enable_review_integration": true,
+        "review_header_gradient": "linear-gradient(135deg, rgba(255, 194, 102, 1), rgba(255, 163, 26, 1) 100%)",
+        "review_header_text_color": "#000000",
+        "review_button_background": "#000000",
+        "review_button_text_color": "#ffffff"
+      }
+    },
+    "related-products": {
+      "type": "related-products",
+      "settings": {
+        "recommendations_count": 9,
+        "products": [],
+        "full_width": true,
+        "stack_products": true,
+        "show_progress_bar": false,
+        "products_per_row_mobile": "1",
+        "products_per_row_desktop": 3,
+        "subheading": "",
+        "title": "Leve estes também",
+        "content": "",
+        "background": "",
+        "background_gradient": "",
+        "text_color": "",
+        "heading_color": "",
+        "heading_gradient": "",
+        "product_card_background": "",
+        "product_card_text_color": ""
+      }
+    }
+  },
+  "order": [
+    "main",
+    "1629746450643786911",
+    "17127627190b380007",
+    "related-products"
+  ]
+}
