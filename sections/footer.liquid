@@ -1,0 +1,510 @@
+{%- assign newsletter_block = section.blocks | where: 'type', 'newsletter' | first -%}
+
+{%- if section.blocks.size > 3 -%}
+  <style>
+    @media screen and (min-width: 1000px) {
+      #shopify-section-{{ section.id }} {
+        {%- if newsletter_block != blank -%}
+          --footer-block-list-gap: var(--spacing-10);
+        {%- endif -%}
+
+        --footer-block-list-justify-content: space-between;
+      }
+    }
+  </style>
+{%- endif -%}
+
+<div class="footer">
+  <div class="container">
+    <div class="footer__wrapper">
+      {%- comment -%}
+        ------------------------------------------------------------------------------------------------------------------
+        BLOCK AREA
+        ------------------------------------------------------------------------------------------------------------------
+      {%- endcomment -%}
+
+      {%- if section.blocks.size > 0 -%}
+        <div class="footer__block-list empty:hidden">
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when 'text' -%}
+                {%- if block.settings.title != blank
+                  or block.settings.content != blank
+                  or shop.features.follow_on_shop?
+                  and block.settings.enable_follow_on_shop
+                -%}
+                  <div class="footer__block footer__block--text" {{ block.shopify_attributes }}>
+                    {%- if block.settings.title != blank -%}
+                      <p class="bold">{{ block.settings.title | escape }}</p>
+                    {%- endif -%}
+
+                    {%- if block.settings.content != blank -%}
+                      <div class="prose text-subdued">
+                        {{- block.settings.content -}}
+                      </div>
+                    {%- endif -%}
+
+                    {%- if shop.features.follow_on_shop? and block.settings.enable_follow_on_shop -%}
+                      <div class="follow-on-shop">
+                        {{- shop | login_button: action: 'follow' -}}
+                      </div>
+                    {%- endif -%}
+                  </div>
+                {%- endif -%}
+
+              {%- when 'links' -%}
+                {%- if block.settings.menu != blank -%}
+                  <div class="footer__block footer__block--menu" {{ block.shopify_attributes }}>
+                    {%- if block.settings.show_menu_title -%}
+                      <p class="bold">{{ block.settings.menu.title }}</p>
+                    {%- endif -%}
+
+                    <ul class="v-stack gap-3" role="list">
+                      {%- for link in block.settings.menu.links -%}
+                        <li>
+                          <a href="{{ link.url }}" class="inline-block link-faded break-all">{{ link.title }}</a>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                  </div>
+                {%- endif -%}
+
+              {%- when 'newsletter' -%}
+                <div class="footer__block footer__block--newsletter" {{ block.shopify_attributes }}>
+                  {%- if block.settings.image != blank -%}
+                    {%- capture sizes -%}{{ block.settings.image_width }}px{%- endcapture -%}
+                    {%- capture widths -%}{{ block.settings.image_width }}, {{ block.settings.image_width | times: 2 | at_most: block.settings.image.width }}{%- endcapture -%}
+                    {%- capture style -%}max-width: {{ block.settings.image_width }}px{%- endcapture -%}
+                    {{-
+                      block.settings.image
+                      | image_url: width: block.settings.image.width
+                      | image_tag: loading: 'lazy', style: style, sizes: sizes, widths: widths
+                    -}}
+                  {%- endif -%}
+
+                  <div class="v-stack gap-6">
+                    {%- if block.settings.title != blank -%}
+                      <p class="{{ block.settings.heading_size }}">{{- block.settings.title | escape -}}</p>
+                    {%- endif -%}
+
+                    {%- if block.settings.content != blank -%}
+                      <div class="prose text-subdued">
+                        {{- block.settings.content -}}
+                      </div>
+                    {%- endif -%}
+
+                    {%- form 'customer', id: 'footer-newsletter', class: 'footer__newsletter-form form' -%}
+                      {%- if form.posted_successfully? -%}
+                        {%- capture success_message -%}{{ 'general.newsletter.subscribed_successfully' | t }}{%- endcapture -%}
+                        {%- render 'banner', content: success_message, status: 'success' -%}
+                      {%- else -%}
+                        {%- if form.errors -%}
+                          {%- capture error_message -%}{{ form.errors.translated_fields['email'] }} {{ form.errors.messages['email'] }}{%- endcapture -%}
+                          {%- render 'banner', content: error_message, status: 'error' -%}
+                        {%- endif -%}
+
+                        <input type="hidden" name="contact[tags]" value="newsletter">
+
+                        {%- capture label -%}{{ 'general.newsletter.email' | t }}{%- endcapture -%}
+                        {%- render 'input',
+                          name: 'contact[email]',
+                          label: label,
+                          type: 'email',
+                          required: true,
+                          autocomplete: 'email',
+                          enterkeyhint: 'send',
+                          self_submit: true
+                        -%}
+                      {%- endif -%}
+                    {%- endform -%}
+                  </div>
+                </div>
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+
+      {%- comment -%}
+        ------------------------------------------------------------------------------------------------------------------
+        SECONDARY AREA
+        ------------------------------------------------------------------------------------------------------------------
+      {%- endcomment -%}
+
+      <div class="footer__aside empty:hidden">
+        {%- comment -%}
+          ----------------------------------------------------------------------------------------------------------------
+          SOCIAL MEDIA + LOCALIZATION
+          ----------------------------------------------------------------------------------------------------------------
+        {%- endcomment -%}
+
+        {%- if section.settings.show_social_media -%}
+          {%- capture social_media -%}{%- render 'social-media' -%}{%- endcapture -%}
+        {%- endif -%}
+
+        {%- if section.settings.show_country_selector and localization.available_countries.size > 1 -%}
+          {%- assign country_selector = true -%}
+        {%- endif -%}
+
+        {%- if section.settings.show_locale_selector and localization.available_languages.size > 1 -%}
+          {%- assign locale_selector = true -%}
+        {%- endif -%}
+
+        {%- if social_media != blank or country_selector or locale_selector -%}
+          <div class="footer__aside-top">
+            {{- social_media -}}
+
+            {%- if country_selector or locale_selector -%}
+              <div class="h-stack gap-6">
+                {%- if social_media == blank -%}
+                  {%- assign popover_horizontal_position = 'start' -%}
+                {%- else -%}
+                  {%- assign popover_horizontal_position = 'end' -%}
+                {%- endif -%}
+
+                {%- if country_selector -%}
+                  {%- render 'localization-selector',
+                    type: 'country',
+                    show_country_name: section.settings.show_country_name,
+                    show_country_flag: section.settings.show_country_flag,
+                    popover_horizontal_position: popover_horizontal_position
+                  -%}
+                {%- endif -%}
+
+                {%- if locale_selector -%}
+                  {%- render 'localization-selector',
+                    type: 'locale',
+                    popover_horizontal_position: popover_horizontal_position
+                  -%}
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+
+        {%- comment -%}
+          ----------------------------------------------------------------------------------------------------------------
+          COPYRIGHT
+          ----------------------------------------------------------------------------------------------------------------
+        {%- endcomment -%}
+      </div>
+    </div>
+
+    <div
+      class="footer__additional-container"
+      style="
+                                                                                                                                                                                                display: flex; flex-wrap: wrap; justify-content: space-between; margin-top: 50px; gap: 50px;
+      "
+    >
+      <!-- Segurança -->
+      <div class="footer__security-title footer_section" style="width: 270px;">
+        <p class="footer__title">Segurança</p>
+
+        <div
+          class="footer__security-quality"
+          style="flex: 1; display: flex; justify-content: center; align-items: center; gap: 10px;"
+        >
+          <a
+            href="https://www.sslshopper.com/ssl-checker.html#hostname=https://zuban.com.br"
+            target="_blank"
+            rel="noopener"
+          >
+            <img
+              src="https://i.imgur.com/tqgH7PX.png"
+              alt="Notion Secured"
+              style="width: 83px; height:35px; "
+              loading="lazy"
+            >
+          </a>
+          <a href="https://www.reclameaqui.com.br/" target="_blank" rel="noopener">
+            <img
+              src="https://i.imgur.com/DZLVXlL.png"
+              alt="Reclame Aqui"
+              style="width: 83px; height:15px;"
+              loading="lazy"
+            >
+          </a>
+          <a
+            href="https://transparencyreport.google.com/safe-browsing/search?url=https://zuban.com.br&hl=pt_BR"
+            target="_blank"
+            rel="noopener"
+          >
+            <img
+              src="https://i.imgur.com/Jnct9y7.png"
+              alt="Google Seguro"
+              style="width: 83px; height:32.75px;"
+              loading="lazy"
+            >
+          </a>
+        </div>
+      </div>
+
+      <div class="footer__payment-methods footer_section" style="width: ;">
+        <p class="footer__title">Nós aceitamos</p>
+        <div class="payment-list" style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+          <img
+            src="{{ 'visa.svg' | asset_url }}"
+            alt="Cartão de Crédito"
+            style="width: 50px; height: 32.5px;"
+            loading="lazy"
+          >
+          <img
+            src="{{ 'mastercard.svg' | asset_url }}"
+            alt="Cartão de Crédito"
+            style="width: 50px; height: 32.5px;"
+            loading="lazy"
+          >
+          <img
+            src="{{ 'card-3.svg' | asset_url }}"
+            alt="Cartão de Crédito"
+            style="width: 50px; height: 32.5px;"
+            loading="lazy"
+          >
+          <img
+            src="{{ 'amex.svg' | asset_url }}"
+            alt="Cartão de Crédito"
+            style="width: 50px; height: 32.5px;"
+            loading="lazy"
+          >
+          <img
+            src="{{ 'discover.svg' | asset_url }}"
+            alt="Cartão de Crédito"
+            style="width: 50px; height: 32.5px;"
+            loading="lazy"
+          >
+          <img
+            src="{{ 'elo.svg' | asset_url }}"
+            alt="Cartão de Crédito"
+            style="width: 50px; height: 32.5px;"
+            loading="lazy"
+          >
+          <img
+            src="{{ 'hipercard.svg' | asset_url }}"
+            alt="Cartão de Crédito"
+            style="width: 50px; height: 32.5px;"
+            loading="lazy"
+          >
+          <img
+            src="{{ 'pix.svg' | asset_url }}"
+            alt="Cartão de Crédito"
+            style="width: 50px; height: 32.5px;"
+            loading="lazy"
+          >
+          {% if settings.show_ticket %}
+            <img src="{{ 'boleto.svg' | asset_url }}" alt="Boleto" style="width: 50px; height: 32.5px;" loading="lazy">
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Métodos de Envio -->
+      <div class="footer__shipping-methods-title footer_section" style="width: 250px;">
+        <p class="footer__title">Métodos de Envio</p>
+
+        <div
+          class="footer__shipping-methods"
+          style="flex: 1; display: flex; justify-content: center; align-items: center; gap: 10px;"
+        >
+          <img
+            src="{{ 'correio.svg' | asset_url }}"
+            alt="Cartão de Crédito"
+            style="width: 70px; height: 20px;"
+            loading="lazy"
+          >
+          <img
+            src="{{ 'sedex.svg' | asset_url }}"
+            alt="Cartão de Crédito"
+            style="width: 70px; height: 20px;"
+            loading="lazy"
+          >
+          <img
+            src="{{ 'pac.svg' | asset_url }}"
+            alt="Cartão de Crédito"
+            style="width: 70px; height: 20px;"
+            loading="lazy"
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  @media (max-width: 920px) {
+    .footer__additional-container {
+      justify-content: start !important;
+    }
+
+    .footer__title {
+      text-align: center;
+    }
+
+    .footer_section {
+      margin: 0 auto;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Footer",
+  "class": "shopify-section--footer",
+  "tag": "footer",
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_social_media",
+      "label": "Mostrar redes sociais",
+      "info": "Para configurar as redes sociais, vá para as configurações de suas redes sociais.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": "Mostrar ícones de pagamento",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Seletor de país/região",
+      "info": "Para adicionar um país/região, vá para suas [configurações de mercados.](/admin/settings/markets)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_country_selector",
+      "label": "Mostrar seletor de país/região",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_country_flag",
+      "label": "Mostrar bandeira do país",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_country_name",
+      "label": "Mostrar nome do país",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Seletor de idioma",
+      "info": "Para adicionar um idioma, vá para suas [configurações de idiomas.](/admin/settings/languages)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_locale_selector",
+      "label": "Mostrar seletor de idioma",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text",
+      "name": "Texto",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Título",
+          "default": "Sobre nossa loja"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Conteúdo",
+          "default": "<p>Use esta área de texto para contar aos seus clientes sobre sua marca e visão. Você pode alterá-la no editor de temas.</p>"
+        },
+        {
+          "type": "checkbox",
+          "id": "enable_follow_on_shop",
+          "label": "Mostrar Seguir na Loja",
+          "info": "Para permitir que os clientes sigam sua loja no aplicativo Shop a partir de sua loja online, o Shop Pay deve estar ativado. [Saiba mais](https://help.shopify.com/manual/online-store/themes/customizing-themes/follow-on-shop)",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "links",
+      "name": "Links",
+      "settings": [
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu",
+          "info": "Este menu não mostrará itens de menu suspenso.",
+          "default": "footer"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_menu_title",
+          "label": "Mostrar título do menu",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "newsletter",
+      "name": "Newsletter",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Os clientes que se inscreverem terão seu endereço de e-mail adicionado à lista de clientes que \"aceitam marketing\" [lista de clientes](/admin/customers?query=&accepts_marketing=1)."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagem",
+          "info": "Recomendado 600 x 600px .png"
+        },
+        {
+          "type": "range",
+          "id": "image_width",
+          "min": 50,
+          "max": 300,
+          "step": 10,
+          "unit": "px",
+          "label": "Largura da imagem",
+          "default": 150
+        },
+        {
+          "type": "select",
+          "id": "heading_size",
+          "label": "Tamanho do título",
+          "options": [
+            {
+              "value": "h3",
+              "label": "H3"
+            },
+            {
+              "value": "h4",
+              "label": "H4"
+            },
+            {
+              "value": "h5",
+              "label": "H5"
+            },
+            {
+              "value": "h6",
+              "label": "H6"
+            }
+          ],
+          "default": "h3"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Título",
+          "default": "Inscreva-se em nossa newsletter"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Conteúdo"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

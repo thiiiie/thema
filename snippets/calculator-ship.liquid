@@ -1,0 +1,114 @@
+<div class="shipping-calculator">
+  <input type="number" id="zip-code-input" placeholder="Digite seu CEP" aria-label="Digite seu CEP">
+  <button id="calculate-shipping" onclick="calculateShipping()" style="font-weight: bold;">Calcular frete</button>
+</div>
+
+<div id="shipping-options" style="display: none;"></div>
+
+<style>
+    .shipping-calculator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #zip-code-input {
+    flex-grow: 1;
+    padding: 10px;
+    padding-left: 20px;
+    border: 1px solid #ccc;
+    border-radius: 50px;
+    background-color: {{ settings.background }}
+  }
+
+  #calculate-shipping {
+    padding: 12px 42px;
+    background-color: black;
+    color: white;
+    border: none;
+    border-radius: 100px;
+    cursor: pointer;
+  }
+
+  #calculate-shipping:hover {
+    background-color: #333;
+    transition: 500ms;
+  }
+
+  @media screen and (max-width: 450px) {
+    #calculate-shipping {
+          padding: 12px 16px;
+    }
+
+
+  }
+
+    @media screen and (max-width: 343px) {
+          #zip-code-input {
+                max-width: 140px;
+
+    }
+    }
+</style>
+
+<script>
+  let shippingRates = {
+    pac: {
+      active: {{ settings.active_free_ship }},
+      name: "{{ settings.free_ship_name }}",
+      estimate: "{{ settings.free_ship_estimate }}",
+      price: "R$ {{ settings.price_simulator_ship_1 }},00"
+    },
+    sedex: {
+      active: {{ settings.active_paid_ship }},
+      name: "{{ settings.name_simulator_ship }}",
+      estimate: "{{ settings.estimate_simulator_ship }}",
+      price: "R$ {{ settings.price_simulator_ship }},00"
+    }
+  };
+
+  document.getElementById('zip-code-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      calculateShipping();
+    }
+  });
+
+  function isValidCEP(cep) {
+    let cepRegex = /^[0-9]{5}-?[0-9]{3}$/;
+    return cepRegex.test(cep);
+  }
+
+  function calculateShipping() {
+    let zipCode = document.getElementById('zip-code-input').value;
+    if (!zipCode || !isValidCEP(zipCode)) {
+      return;
+    }
+
+    let shippingInfo = '<p>Opções de frete para o seu CEP:</p><ul>';
+    if (shippingRates.pac.active) {
+      shippingInfo += '<li><strong>' + shippingRates.pac.name + ':</strong> ' + shippingRates.pac.price + ' - Prazo: ' + shippingRates.pac.estimate + '</li>';
+    }
+    if (shippingRates.sedex.active) {
+      shippingInfo += '<li><strong>' + shippingRates.sedex.name + ':</strong> ' + shippingRates.sedex.price + ' - Prazo: ' + shippingRates.sedex.estimate + '</li>';
+    }
+    shippingInfo += '</ul>';
+
+    let shippingOptionsDiv = document.getElementById('shipping-options');
+    shippingOptionsDiv.innerHTML = shippingInfo;
+    fadeIn(shippingOptionsDiv);
+  }
+
+  function fadeIn(element) {
+    element.style.opacity = 0;
+    element.style.display = 'block';
+    let last = +new Date();
+    let tick = function() {
+      element.style.opacity = +element.style.opacity + (new Date() - last) / 400;
+      last = +new Date();
+      if (+element.style.opacity < 1) {
+        (window.requestAnimationFrame && requestAnimationFrame(tick)) || setTimeout(tick, 16);
+      }
+    };
+    tick();
+  }
+</script>

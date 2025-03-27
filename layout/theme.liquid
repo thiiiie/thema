@@ -1,0 +1,450 @@
+
+<!-- start utm script -->
+<div id='scriptUtm'>
+    <script>
+        class UtmHandler {
+            constructor() {
+                this.url = new URL(window.location.href);
+                this.utmParams = this.getUtmParams();
+                this.cookieName = '_sirius_track';
+                this.setUTMCookie(this.utmParams);
+            }
+
+            getUtmParams() {
+                return {
+                    src: this.url.searchParams.get('src'),
+                    utm_source: this.url.searchParams.get('utm_source'),
+                    utm_medium: this.url.searchParams.get('utm_medium'),
+                    utm_campaign: this.url.searchParams.get('utm_campaign'),
+                    utm_term: this.url.searchParams.get('utm_term'),
+                    utm_content: this.url.searchParams.get('utm_content')
+                };
+            }
+
+            setUTMCookie(utmParams) {
+                let cookieValue = '';
+                Object.keys(utmParams).forEach(key => {
+                    if (utmParams[key]) {
+                        if (cookieValue) {
+                            cookieValue += '|';
+                        }
+                        cookieValue += key + '=' + utmParams[key];
+                    }
+                });
+
+                if (cookieValue) {
+                    const myDate = new Date();
+                    myDate.setMonth(myDate.getMonth() + 12);
+                    document.cookie = `${this.cookieName}=${cookieValue};domain=.{{ shop.domain }};path=/;expires=${myDate.toUTCString()}`;
+                }
+            }
+        }
+
+        new UtmHandler();
+    </script>
+</div>
+<!-- end utm script -->
+<!-- start cart script -->
+{% comment %}{% if template.name == "cart" %}{% endcomment %}
+<div id="CheckoutScriptCart">
+    <script defer>
+        {% assign url_parts = canonical_url | split: '/' %}
+        {% assign domain = url_parts[2] | replace: 'www.', '' %}
+        {% capture cartURL %}{{ url_parts[0] }}//www.{{ domain }}/checkout{% endcapture %}
+
+        class CheckoutHandler {
+            constructor() {
+                this.loadDelay = 100;
+                this.cartURL = "{{ cartURL }}";
+                this.shopifyCartRoute = "{{ routes.cart_url }}";
+                this.configs = {"mini_cart":false,"buy_it_now_query_selector":"button[name=checkout]"};
+                this.themeName = "{{ theme.name }}";
+                this.templateName = "{{ template.name }}";
+                this.page = "{{ template }}";
+                this.init();
+                this.submitButtons = [];
+                this.forms = [];
+                {% comment %}
+                //https://shopify.dev/docs/api/ajax#locale-aware-urls
+                //https://shopify.dev/docs/api/ajax/reference/cart
+
+                {% endcomment %}
+            }
+
+            init() {
+                document.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(() => this.setEventListeners(), this.loadDelay);
+                });
+                if(!!this.configs?.mini_cart){
+                    document.addEventListener('DOMContentLoaded', () => {
+                        setTimeout(() => this.miniCartWatcher(), this.loadDelay);
+                    });
+                }
+
+            }
+
+            miniCartWatcher() {
+                let selector = `#mini-cart,quick-buy, #quick-buy, quick-buy-drawer, #quick-buy-drawer, buy-drawer, #buy-drawer, cart-drawer, #cart-drawer, quick-cart, #quick-cart`;
+                if (this.configs?.minicart_query_selector) {
+                    selector = selector.concat(`, ${this.configs.minicart_query_selector}`);
+                }
+
+                const miniCart = document.querySelector(selector);
+
+                if (miniCart) {
+                    const observer = new MutationObserver((mutations) => {
+                        mutations.forEach((mutation) => {
+                            this.setEventListeners();
+                        });
+                    });
+
+                    observer.observe(miniCart, {
+                        childList: true, // Watches for added/removed elements
+                        subtree: true, // Watches changes inside child elements
+                        characterData: true, // Watches text content changes
+                    });
+                }
+            }
+
+            async getCart() {
+                const response = await fetch(window.Shopify.routes.root + 'cart.js');
+                const cart = await response.json();
+                return cart.items;
+            }
+
+            getCheckoutForm() {
+                return document.querySelector(`form[action='${this.shopifyCartRoute}'], form#cart`);
+            }
+
+            setFormDataCheckoutAction(form, method = "POST") {
+                if (form === null) {
+                    form = document.querySelector(`form[action='${this.shopifyCartRoute}]'`);
+                    form.setAttribute("action", this.cartURL);
+                }
+                if (form) {
+                    form.setAttribute("action", this.cartURL);
+                }
+                if (!form.hasAttribute('method')) form.setAttribute('method', method);
+                if (!form.hasAttribute('novalidate')) form.setAttribute('novalidate', 'novalidate');
+                if (!form.hasAttribute('data-checkout')) form.setAttribute('data-checkout', 'cart-form');
+                return form;
+            }
+
+            createInputDataCheckout(name, loopIndex, value, dataNumber, type = 'hidden') {
+                const element = document.createElement('input');
+                element.setAttribute('type', type);
+                element.setAttribute('data', dataNumber);
+                element.setAttribute('name', `${name}${loopIndex}`);
+                element.setAttribute('value', `${value}`);
+                return element;
+            }
+
+            async submitCheckout(form) {
+                const cartItems = await this.getCart();
+                if (!cartItems || cartItems.length === 0) {
+                    console.error('Cart items not set or empty.');
+                    return;
+                }
+
+                const formData = cartItems.map((item, index) => {
+                    if (!this.productHasVariants(item)) {
+                        return {
+                            code: String(item.product_id + '/' + item.variant_id),
+                            quantity: item.quantity,
+                            amount: item.price,
+                        };
+                    } else {
+                        return {
+                            code: String(item.product_id),
+                            primary_variant_code: String(item.variant_id),
+                            quantity: item.quantity,
+                            amount: item.price,
+                        };
+                    }
+                });
+
+                const jsonData = {products: formData};
+                const jsonString = JSON.stringify(jsonData);
+
+                this.setFormDataCheckoutAction(form, "post");
+
+
+                const jsonDataInput = document.createElement('input');
+                jsonDataInput.type = 'hidden';
+                jsonDataInput.name = 'cart';
+                jsonDataInput.value = jsonString;
+                form.replaceChildren(jsonDataInput);
+
+                form.submit();
+            }
+
+            setEventListeners() {
+                const self = this;
+                const targets = ['button', 'input', 'a'];
+                const tempSubmitButtons = [];
+
+                targets.forEach(target => {
+                    // let selector = `${target}[form][type=submit], ${target}[id^=checkout], ${target}[name^=checkout]`;
+                    let selector = `${target}[id^=checkout], ${target}[name^=checkout]`;
+
+                    if (self.configs?.checkout_query_selector) {
+                        selector = selector.concat(`, ${self.configs.checkout_query_selector}`);
+                    }
+
+                    const elements = document.querySelectorAll(selector);
+                    tempSubmitButtons.push(...elements);
+                });
+                self.submitButtons = [...new Set(tempSubmitButtons)];
+                self.submitButtons.forEach((button) => {
+                    let form = button.closest('form');
+
+                    if (form) {
+                        form.addEventListener('submit', (e) => {
+                            e.preventDefault();
+                            self.submitCheckout(form);
+                        });
+
+                        this.setFormDataCheckoutAction(form, 'POST');
+                    } else {
+                        form = self.getCheckoutForm();
+
+                        if (form) {
+                            form.addEventListener('submit', (e) => {
+                                e.preventDefault();
+                                self.submitCheckout(form);
+                            });
+
+                            this.setFormDataCheckoutAction(form, 'POST');
+                        }
+
+                        button.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            self.submitCheckout(form);
+                        });
+                    }
+                });
+                const callback = (mutationsList) => {
+                    for (const mutation of mutationsList) {
+                        // Extract id and classList
+                        for (let i = 0; i < self.submitButtons.length; i++) {
+                            const button = self.submitButtons[i];
+                            const id = button.id ? `#${button.id}` : '';
+                            const classes = Array.from(button.classList).map(cls => `.${cls}`).join('');
+                            const name = button.name ? `[name="${button.name}"]` : '';
+                            const type = button.type ? `[type="${button.type}"]` : '';
+                            const dataAttributes = Object.entries(button.dataset)
+                                .map(([key, value]) => `[data-${key}="${value}"]`)
+                                .join('');
+                            //or
+                            // let queryString = [id, classes, name, type,dataAttributes].filter(Boolean).join(', ');
+                            //and
+                            // let queryString = (id + classes + name + type + dataAttributes).trim();
+                            if(queryString){
+                                const matchedElement = document.querySelector(queryString);
+
+                                if (mutation.target.contains(matchedElement)) {
+                                    let form = document.querySelector(queryString).closest('form')
+
+                                    if (form && matchedElement.closest('form').action != this.cartURL) {
+                                        form.addEventListener('submit', (e) => {
+                                            e.preventDefault();
+                                            self.submitCheckout(form);
+                                        });
+
+                                        this.setFormDataCheckoutAction(form, 'POST');
+                                        break;
+                                    }
+                                    // else {
+                                    //       form = self.getCheckoutForm();
+
+                                    //       if (form) {
+                                    //           form.addEventListener('submit', (e) => {
+                                    //               e.preventDefault();
+                                    //               self.submitCheckout(form);
+                                    //           });
+
+                                    //           this.setFormDataCheckoutAction(form, 'POST');
+                                    //       }
+                                    //       button.addEventListener('click', (e) => {
+                                    //           e.preventDefault();
+                                    //           self.submitCheckout(form);
+                                    //       });
+                                    //   }
+                                }
+                            }
+
+                        }
+
+
+                    }
+                }
+
+                const observer = new MutationObserver(callback);
+                const config = {
+                    attributes: true,
+                    childList: true,
+                    subtree: true,
+                };
+                let triesToObserve = [
+                    document.querySelector('#shopify-section-cart-template'),
+                    document.body
+                ];
+
+                for (let i = 0; i < triesToObserve.length; i++) {
+                    if (triesToObserve[i]) {
+                        observer.observe(triesToObserve[i], config);
+                        break; // Exit loop once the first match is found
+                    }
+                }
+
+
+
+            }
+
+            productHasVariants(product) {
+                if (product.has_only_default_variant || product.variants?.[0]?.title == "Default Title" || product.variant_options?.[0] == "Default Title") {
+                    return false
+                } else {
+                    return true
+                }
+            }
+        }
+
+        new
+
+        CheckoutHandler();
+
+    </script>
+</div>
+{% comment %}{% endif %}{% endcomment %}
+<!-- end cart script -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{%- comment -%}
+  ------------------------------------------------------------------------------------------------------------------------
+  NOTE TO DEVELOPERS: welcome to Impact theme! We hope that you will enjoy editing this theme as much as we did for
+    developing it. We have put a lot of work to make this theme as developer friendly as possible by offering you
+    hooks to integrate into critical parts of the theme. You will find the complete technical documentation (including
+    all events, dependencies...) in the "documentation.txt" file, located in the Assets folder.
+  ------------------------------------------------------------------------------------------------------------------------
+{%- endcomment -%}
+
+<!doctype html>
+
+<html class="no-js" lang="{{ request.locale.iso_code }}" dir="{% render 'direction' %}">
+  <head>
+    <meta charset="utf-8">
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, height=device-height, minimum-scale=1.0"
+    >
+    <meta name="theme-color" content="{{ settings.header_background }}">
+
+    <title>
+      {% if page_title == blank -%}
+        {{- shop.name -}}
+      {%- else -%}
+        {{- page_title -}}
+        {%- if current_page != 1 %} &ndash; {{ 'general.page' | t: page: current_page }}{% endif -%}
+      {%- endif %}
+    </title>
+
+    {%- if page_description -%}
+      <meta name="description" content="{{ page_description | escape }}">
+    {%- endif -%}
+
+    <link rel="canonical" href="{{ canonical_url }}">
+
+    {%- if settings.favicon -%}
+      <link rel="shortcut icon" href="{{ settings.favicon | image_url: width: 96 }}">
+      <link rel="apple-touch-icon" href="{{ settings.favicon | image_url: width: 180 }}">
+    {%- endif -%}
+
+    {%- comment -%}Few prefetch to increase performance on commonly used third-parties{%- endcomment -%}
+    <link rel="preconnect" href="https://cdn.shopify.com">
+    <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+    <link rel="dns-prefetch" href="https://productreviews.shopifycdn.com">
+
+    {%- unless settings.heading_font.system? -%}
+      <link rel="preload" href="{{ settings.heading_font | font_url }}" as="font" type="font/woff2" crossorigin>
+    {%- endunless -%}
+
+    {%- unless settings.text_font.system? -%}
+      <link rel="preload" href="{{ settings.text_font | font_url }}" as="font" type="font/woff2" crossorigin>
+    {%- endunless -%}
+
+    {%- render 'social-meta-tags' -%}
+    {%- render 'microdata-schema' -%}
+    {%- render 'css-variables' -%}
+    {%- render 'js-variables' -%}
+
+    {{ content_for_header }}
+
+    {{- 'min.css' | asset_url | stylesheet_tag: preload: true -}}
+  </head>
+
+  <body class="{% if settings.show_page_transition %}page-transition{% endif %} {% if settings.zoom_image_on_hover %}zoom-image--enabled{% endif %}">
+    {%- render 'shadow-dom-templates' -%}
+
+    <a href="#main" class="skip-to-content sr-only">{{ 'general.accessibility.skip_to_content' | t }}</a>
+
+    {%- if request.page_type != 'password' -%}
+      {%- sections 'header-group' -%}
+      {%- sections 'overlay-group' -%}
+
+      {%- if settings.cart_type == 'popover' -%}
+        <cart-notification-drawer open-from="bottom" class="quick-buy-drawer drawer"></cart-notification-drawer>
+      {%- endif -%}
+    {%- endif -%}
+
+    {%- if request.page_type == 'customers/account'
+      or request.page_type == 'customers/order'
+      or request.page_type == 'customers/addresses'
+    -%}
+      {%- section 'account-banner' -%}
+    {%- endif -%}
+
+    <main role="main" id="main" class="anchor">
+      {{ content_for_layout }}
+
+      {%- comment -%}
+        IMPLEMENTATION NOTE: due to the very complex logic of margin/padding collapsing in Impact, the footer group is
+        added into the main element to ensure that dynamic sections added into the footer group are properly laid out.
+      {%- endcomment -%}
+      {%- if request.page_type != 'password' -%}
+        {%- sections 'footer-group' -%}
+      {%- endif -%}
+    </main>
+
+    <script defer type="module" src="{{ 'sections.js' | asset_url }}"></script>
+    <script defer type="module" src="{{ 'vendor.min.js' | asset_url }}"></script>
+
+<!--Botão whatsapp-->
+<a href="https://api.whatsapp.com/send?phone=5516991619650&text=Ol%C3%A1%2C%20gostaria%20de%20tirar%20uma%20d%C3%BAvida!"><img src="https://host2b.net/download/imagem/whatsapp-icon.png" style="height:80px; position:fixed; bottom:25px; right:25px; z-index:99999;" data-selector="img"></a>
+<!--Botão whatsapp-->
+
+/body>
+</html>

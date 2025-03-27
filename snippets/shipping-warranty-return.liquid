@@ -1,0 +1,60 @@
+<div class="info-features">
+  {% if section.settings.enable_shipping %}
+    <div class="info-feature">
+      <img src="{{ 'truck.svg' | asset_url }}" width="41" height="41" alt="Frete Grátis" loading="lazy">
+      <span
+        >Frete
+        <strong
+          ><span style="color: {{ settings.strong_color }};">{{ section.settings.shipping_city_amount }}</span></strong
+        >
+        para
+        <strong
+          ><span style="color: {{ settings.strong_color }};">{{ section.settings.shipping_city }}</span></strong
+        ></span
+      >
+    </div>
+  {% endif %}
+  {% if section.settings.enable_warranty %}
+    <div class="info-feature">
+      <img src="{{ 'garantia.svg' | asset_url }}" width="41" height="41" alt="Garantia" loading="lazy">
+      <span>Garantia de {{ section.settings.warranty_duration_text }}</span>
+    </div>
+  {% endif %}
+  {% if section.settings.enable_return %}
+    <div class="info-feature">
+      <img src="{{ 'return.svg' | asset_url }}" width="41" height="41" alt="Devolução" id="return" loading="lazy">
+      <span>{{ section.settings.return_days }} dias para troca e devolução</span>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+  .info-features {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+
+  .info-features span {
+    color: #6c6c6c;
+  }
+
+  .info-feature {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .info-features img {
+    width: 27px;
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 5px;
+  }
+
+  #return {
+    width: 26px;
+    padding: 6px;
+  }
+</style>

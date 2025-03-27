@@ -1,0 +1,225 @@
+{%- render 'section-spacing-collapsing' -%}
+
+{%- assign text_position = section.settings.text_position -%}
+
+<style>
+  #shopify-section-{{ section.id }} {
+    --section-stack-intro: {% if text_position == 'center' %}66.6667%{% else %}50%{% endif %};
+    --section-stack-main: 50%;
+  }
+</style>
+
+<div {% render 'section-properties' %}>
+  <div class="section-stack {% if text_position != 'center' %}section-stack--horizontal{% else %}section-stack--center{% endif %} {% if text_position == 'end' %}section-stack--reverse{% endif %}">
+    {%- capture content -%}
+      {%- if section.settings.subheading != blank -%}
+        <p class="bold">{{ section.settings.subheading | escape }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.title != blank -%}
+        <h2 class="h2">
+          {%- render 'styled-text', content: section.settings.title, text_color: section.settings.heading_color, gradient: section.settings.heading_gradient -%}
+        </h2>
+      {%- endif -%}
+
+      {{- section.settings.content -}}
+
+      {%- if section.settings.button_text != blank -%}
+        {% render 'button', content: section.settings.button_text, href: section.settings.button_url, size: 'xl', background: section.settings.button_background, text_color: section.settings.button_text_color %}
+      {%- endif -%}
+    {%- endcapture -%}
+
+    {%- if content != blank -%}
+      <div class="section-stack__intro">
+        <div class="prose {% if text_position == 'center' %}text-center{% endif %}">
+          {{- content -}}
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <div class="section-stack__main">
+        <div
+          {% render 'surface',
+            class: 'accordion-box rounded',
+            background: section.settings.accordion_background,
+            text_color: section.settings.accordion_text_color,
+            background_fallback: 'bg-secondary'
+          %}
+        >
+          {%- for block in section.blocks -%}
+            {%- if block.settings.title != blank and block.settings.content != blank -%}
+              {%- capture accordion_content -%}
+                <div class="prose">{{ block.settings.content }}</div>
+              {%- endcapture -%}
+
+              {%- render 'accordion', title: block.settings.title, content: accordion_content, block: block -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Conteúdo do Acordeão",
+  "class": "shopify-section--accordion-content",
+  "tag": "section",
+  "disabled_on": {
+    "templates": ["password"],
+    "groups": ["header", "custom.overlay"]
+  },
+  "blocks": [
+    {
+      "name": "Item",
+      "type": "item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Título",
+          "default": "Título"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Conteúdo",
+          "default": "<p>Escreva o conteúdo para ajudar seus clientes a entender melhor seus produtos ou políticas.</p>"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Largura completa",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subtítulo"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Cabeçalho",
+      "default": "Cabeçalho"
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": "Conteúdo",
+      "default": "<p>Use este texto para compartilhar informações sobre sua marca com seus clientes. Descreva um produto, compartilhe anúncios ou dê boas-vindas aos clientes em sua loja.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Texto do botão"
+    },
+    {
+      "type": "url",
+      "id": "button_url",
+      "label": "Link do botão"
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "Posição do texto",
+      "options": [
+        {
+          "value": "start",
+          "label": "Esquerda"
+        },
+        {
+          "value": "center",
+          "label": "Centro"
+        },
+        {
+          "value": "end",
+          "label": "Direita"
+        }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "header",
+      "content": "Cores",
+      "info": "Gradiente substitui cores sólidas quando configurado."
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Fundo"
+    },
+    {
+      "type": "color_background",
+      "id": "background_gradient",
+      "label": "Gradiente de fundo"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Texto"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Cor do cabeçalho"
+    },
+    {
+      "type": "color_background",
+      "id": "heading_gradient",
+      "label": "Gradiente do cabeçalho"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Fundo do botão"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Texto do botão"
+    },
+    {
+      "type": "color",
+      "id": "accordion_background",
+      "label": "Fundo do acordeão"
+    },
+    {
+      "type": "color",
+      "id": "accordion_text_color",
+      "label": "Texto do acordeão"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Conteúdo do Acordeão",
+      "blocks": [
+        {
+          "type": "item",
+          "settings": {
+            "title": "Pergunta 1"
+          }
+        },
+        {
+          "type": "item",
+          "settings": {
+            "title": "Pergunta 2"
+          }
+        },
+        {
+          "type": "item",
+          "settings": {
+            "title": "Pergunta 3"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

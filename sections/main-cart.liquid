@@ -1,0 +1,823 @@
+<div class="container">
+  {%- if cart.item_count == 0 -%}
+    <div class="empty-state">
+      <div class="empty-state__icon-wrapper">
+        {%- render 'icon' with 'cart', width: 32, height: 32, stroke_width: 1 -%}
+        <span class="count-bubble count-bubble--lg">0</span>
+      </div>
+
+      <div class="prose">
+        <p class="h4">{{ 'cart.general.empty' | t }}</p>
+
+        {%- assign button_content = 'cart.general.continue_shopping' | t -%}
+        {%- render 'button', href: settings.cart_empty_button_link, size: 'xl', content: button_content -%}
+      </div>
+    </div>
+  {%- else -%}
+    <div class="page-spacer">
+      <div class="cart">
+        <div class="cart-header">
+          <h1 class="h2">{{ 'cart.general.title' | t }}</h1>
+
+          {%- if settings.cart_show_free_shipping_threshold -%}
+            {%- render 'free-shipping-bar',
+              ship_primary_color: settings.ship_primary_color,
+              ship_secondary_color: settings.ship_secondary_color
+            -%}
+          {%- endif -%}
+        </div>
+
+        <div class="cart-order">
+          <div class="cart-order__summary">
+            {%- comment -%}
+              ----------------------------------------------------------------------------------------------------------------
+              ORDER SUMMARY
+              ----------------------------------------------------------------------------------------------------------------
+            {%- endcomment -%}
+            <table class="order-summary">
+              <thead class="order-summary__header">
+                <tr>
+                  <th>{{ 'customer.order.product' | t }}</th>
+                  <th class="w-0">{{ 'customer.order.quantity' | t }}</th>
+                  <th class="text-end">{{ 'customer.order.total' | t }}</th>
+                </tr>
+              </thead>
+
+              <tbody class="order-summary__body">
+                {%- for line_item in cart.items -%}
+                  {%- assign line_max_quantity = '' -%}
+
+                  {%- if line_item.variant.inventory_management != blank
+                    and line_item.variant.inventory_policy == 'deny'
+                  -%}
+                    {%- assign line_max_quantity = line_item.variant.inventory_quantity -%}
+                  {%- endif -%}
+
+                  <tr>
+                    <td>{%- render 'line-item', line_item: line_item -%}</td>
+
+                    <td class="hidden align-center text-center text-subdued sm:table-cell">
+                      <line-item-quantity class="v-stack justify-center gap-2">
+                        <input
+                          class="quantity-input"
+                          type="text"
+                          is="quantity-input"
+                          inputmode="numeric"
+                          {% if line_max_quantity != blank %}
+                            max="{{ line_max_quantity }}"
+                          {% endif %}
+                          data-line-key="{{ line_item.key }}"
+                          aria-label="{{ 'cart.order.change_quantity' | t | escape }}"
+                          value="{{ line_item.quantity }}"
+                        >
+
+                        <span class="text-xs">
+                          <a href="{{ line_item.url_to_remove }}" class="link">{{ 'cart.order.remove' | t }}</a>
+                        </span>
+                      </line-item-quantity>
+                    </td>
+
+                    <td class="hidden align-center text-subdued text-end sm:table-cell">
+                      {{ line_item.final_line_price | money }}
+                    </td>
+                  </tr>
+                {%- endfor -%}
+              </tbody>
+            </table>
+          </div>
+
+          <safe-sticky class="cart-order__recap v-stack gap-6">
+            <form action="{{ routes.cart_url }}" method="POST" class="cart-form rounded">
+              {%- for block in section.blocks -%}
+                {%- case block.type -%}
+                  {%- when '@app' -%}
+                    {%- render block -%}
+
+                  {%- when 'totals' -%}
+                    <div class="cart-form__totals v-stack gap-2" {{ block.shopify_attributes }}>
+                      {%- if block.settings.show_order_weight -%}
+                        <div class="h-stack gap-4 justify-between">
+                          <span class="text-subdued">{{ 'cart.general.weight' | t }}</span>
+                          <span class="text-subdued">{{ cart.total_weight | weight_with_unit }}</span>
+                        </div>
+                      {%- endif -%}
+
+                      <div class="h-stack gap-4 justify-between">
+                        <span class="text-subdued">{{ 'cart.general.subtotal' | t }}</span>
+                        <span class="text-subdued">{{ cart.items_subtotal_price | money }}</span>
+                      </div>
+
+                      {% for discount_application in cart.cart_level_discount_applications %}
+                        <div class="h-stack gap-4 justify-between">
+                          <div class="badge">
+                            {%- render 'icon' with 'discount' -%}
+                            {{- discount_application.title -}}
+                          </div>
+
+                          <span class="text-subdued">-{{ discount_application.total_allocated_amount | money }}</span>
+                        </div>
+                      {% endfor %}
+
+                      <div class="total-main-cart h-stack gap-4 justify-between">
+                        <span class="text-subdued">Frete</span>
+                        {% assign free_shipping_threshold = settings.cart_free_shipping_threshold | times: 100 %}
+                        {% assign standard_ship = settings.standard_ship %}
+                        {% assign free_ship_price = 0 %}
+
+                        {% case standard_ship %}
+                          {% when 0 %}
+                            <h1 id="free-sh">Grátis</h1>
+                          {% when 1 %}
+                            {% if cart.total_price >= free_shipping_threshold %}
+                              <h1 id="free-sh">Grátis</h1>
+                            {% else %}
+                              {% assign freight_cost = settings.price_simulator_ship_1 | times: 100 %}
+                              <span class="text-subdued">{{ freight_cost | money }}</span>
+                            {% endif %}
+                          {% when 2 %}
+                            {% if cart.total_price >= free_shipping_threshold %}
+                              <h1 id="free-sh">Grátis</h1>
+                            {% else %}
+                              {% assign freight_cost = settings.price_simulator_ship | times: 100 %}
+                              <span class="text-subdued">{{ freight_cost | money }}</span>
+                            {% endif %}
+                        {% endcase %}
+                      </div>
+
+                      <style>
+                        #free-sh {
+                          font-weight: bold;
+                          color: #00A341;
+                        }
+                      </style>
+
+                      <div class="h-stack gap-4 justify-between">
+                        <span class="h5">{{ 'cart.general.total' | t }}</span>
+                        {% assign free_shipping_threshold = settings.cart_free_shipping_threshold | times: 100 %}
+                        {% assign standard_ship = settings.standard_ship %}
+                        {% assign subtotal_in_cents = cart.total_price %}
+                        {% assign freight_cost = 0 %}
+
+                        {% case standard_ship %}
+                          {% when 0 %}
+                            {% assign freight_cost = 0 %}
+                          {% when 1 %}
+                            {% if subtotal_in_cents < free_shipping_threshold %}
+                              {% assign freight_cost = settings.price_simulator_ship_1 | times: 100 %}
+                            {% endif %}
+                          {% when 2 %}
+                            {% if subtotal_in_cents < free_shipping_threshold %}
+                              {% assign freight_cost = settings.price_simulator_ship | times: 100 %}
+                            {% endif %}
+                        {% endcase %}
+
+                        {% assign total_in_cents = subtotal_in_cents | plus: freight_cost %}
+                        {% assign cart.total_price = total_in_cents %}
+                        <span class="h5">{{ total_in_cents | money }}</span>
+                      </div>
+                      {%- if block.settings.show_shipping_text -%}
+                        {%- if cart.taxes_included and shop.shipping_policy.body != blank -%}
+                          <span class="text-subdued text-sm">
+                            {{-
+                              'cart.general.taxes_included_and_shipping_policy_html'
+                              | t: link: shop.shipping_policy.url
+                            -}}
+                          </span>
+                        {%- elsif cart.taxes_included -%}
+                          <span class="text-subdued text-sm">
+                            {{- 'cart.general.taxes_included_but_shipping_at_checkout' | t -}}
+                          </span>
+                        {%- elsif shop.shipping_policy.body != blank -%}
+                          <span class="text-subdued text-sm">
+                            {{-
+                              'cart.general.taxes_and_shipping_policy_at_checkout_html'
+                              | t: link: shop.shipping_policy.url
+                            -}}
+                          </span>
+                        {%- else -%}
+                          <span class="text-subdued text-sm">
+                            {{- 'cart.general.taxes_and_shipping_at_checkout' | t -}}
+                          </span>
+                        {%- endif -%}
+                      {%- endif -%}
+                    </div>
+
+                  {%- when 'cart_note' -%}
+                    <cart-note class="cart-form__note block" {{ block.shopify_attributes }}>
+                      {%- assign order_note = 'cart.general.order_note' | t -%}
+                      {%- render 'input',
+                        name: 'note',
+                        multiline: 3,
+                        label: order_note,
+                        value: cart.note,
+                        maxlength: block.settings.maxlength
+                      -%}
+                    </cart-note>
+
+                  {%- when 'text' -%}
+                    {%- if block.settings.content != blank -%}
+                      <div class="prose text-subdued" {{ block.shopify_attributes }}>
+                        {{- block.settings.content -}}
+                      </div>
+                    {%- endif -%}
+
+                  {%- when 'offer' -%}
+                    {%- assign previous_block_index = forloop.index0 | minus: 1 -%}
+                    {%- assign next_block_index = forloop.index0 | plus: 1 -%}
+
+                    {%- if section.blocks[next_block_index].type == 'offer' -%}
+                      <div class="v-stack gap-4">
+                    {%- endif -%}
+
+                    {%- render 'offer', block: block -%}
+
+                    {%- if section.blocks[previous_block_index].type == 'offer' -%}
+                      </div>
+                    {%- endif -%}
+
+                  {%- when 'accelerated_buttons' -%}
+                    {% if additional_checkout_buttons %}
+                      <div
+                        class="additional-checkout-buttons additional-checkout-buttons--vertical"
+                        {{ block.shopify_attributes }}
+                      >
+                        {{- content_for_additional_checkout_buttons -}}
+                      </div>
+                    {% endif %}
+
+                  {%- when 'checkout_button' -%}
+                    {%- assign checkout_button = 'cart.general.checkout' | t -%}
+                    {%- render 'button',
+                      type: 'submit',
+                      icon: 'picto-lock',
+                      content: checkout_button,
+                      size: 'xl',
+                      name: 'checkout',
+                      stretch: true,
+                      block: block
+                    -%}
+                {%- endcase -%}
+              {%- endfor -%}
+            </form>
+
+            {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+              <div class="v-stack gap-4">
+                <span class="text-xs text-subdued text-center">{{ 'cart.general.we_accept' | t }}</span>
+
+                <div class="h-stack gap-2 wrap justify-center">
+                  <img src="{{ 'visa.svg' | asset_url }}" alt="Cartão de Crédito" style="width: 50px;">
+                  <img src="{{ 'mastercard.svg' | asset_url }}" alt="Cartão de Crédito" style="width: 50px;">
+                  <img src="{{ 'card-3.svg' | asset_url }}" alt="Cartão de Crédito" style="width: 50px;">
+                  <img src="{{ 'amex.svg' | asset_url }}" alt="Cartão de Crédito" style="width: 50px;">
+                  <img src="{{ 'discover.svg' | asset_url }}" alt="Cartão de Crédito" style="width: 50px;">
+                  <img src="{{ 'elo.svg' | asset_url }}" alt="Cartão de Crédito" style="width: 50px;">
+                  <img src="{{ 'hipercard.svg' | asset_url }}" alt="Cartão de Crédito" style="width: 50px;">
+                  <img src="{{ 'pix.svg' | asset_url }}" alt="Cartão de Crédito" style="width: 50px;">
+                  {% if settings.show_ticket %}
+                    <img src="{{ 'boleto.svg' | asset_url }}" alt="Boleto" style="width: 50px;">
+                  {% endif %}
+                </div>
+              </div>
+            {%- endif -%}
+          </safe-sticky>
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+</div>
+
+<style>
+                  #progress-container {
+                  width: 100%;
+                  background-color: #ddd;
+                  border-radius: 10px;
+                  overflow: hidden;
+                  margin-top: 50px; /* Garantir algum espaço na parte superior para o caminhão */
+                }
+
+                #progress-bar {
+                  width: 100%;
+                  height: 14px;
+                  background-color: #ddd;
+                  position: relative;
+                  overflow: hidden;
+                  z-index: 2;
+                }
+
+                @keyframes moveBackground {
+                  from { background-position: 0 0; }
+                  to { background-position: 400px 0; }
+                }
+
+                #progress-fill {
+                  transition: 1s ease;
+
+                  height: 100%;
+                  background-image: repeating-linear-gradient(
+    -45deg,
+    {{ settings.ship_secondary_color | default: '#00ff00' }},
+    {{ settings.ship_secondary_color | default: '#00ff00' }} 10px,
+    {{ settings.ship_primary_color | default: '#ff0000' }} 10px,
+    {{ settings.ship_primary_color | default: '#ff0000' }} 20px
+  );
+                  left: 0;
+                  animation: moveBackground 10s linear infinite; /* Ajustado para movimento contínuo */
+                }
+
+               .container-truck {
+          height: 50px;
+          z-index: 3; /* Ajustado para ficar acima da barra de progresso */
+          text-align: end;
+          position: relative; /* Adicionado para garantir que z-index funcione */
+  transition: 1s ease; /* Aplica transição suave na propriedade width */
+
+        }
+
+        #progress-truck {
+          background-color: #fff;
+          padding: 5px;
+          border: 2px solid #000;
+          border-radius: 50px;
+          margin-bottom: -105px;
+          position: relative; /* Se necessário, ajuste a posição aqui também */
+        }
+
+        #cart-drawer > div:nth-child(1) > div.cart-drawer__top > free-shipping-bar > span, #shopify-section-template--22241715552559__main > div > div > div > div.cart-header > free-shipping-bar > span {
+          text-align: center;
+          font-weight: bold;
+          font-size: 18px;
+        }
+</style>
+
+{% schema %}
+{
+  "name": "Carrinho",
+  "class": "shopify-section--main-cart",
+  "tag": "section",
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    {
+      "type": "totals",
+      "name": "Totais",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_order_weight",
+          "label": "Mostrar peso do pedido",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "show_shipping_text",
+          "label": "Mostrar texto sobre envio/impostos",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "cart_note",
+      "name": "Nota do Carrinho",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "number",
+          "id": "max_length",
+          "label": "Número máximo de caracteres"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Texto",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Conteúdo"
+        }
+      ]
+    },
+    {
+      "type": "checkout_button",
+      "name": "Botão de Finalizar Compra",
+      "limit": 1
+    },
+    {
+      "type": "accelerated_buttons",
+      "name": "Botões de Pagamento",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Configure os botões de pagamento acelerado nas suas [configurações de pagamento](https://www.shopify.com/admin/settings/payments)."
+        }
+      ]
+    },
+    {
+      "type": "offer",
+      "name": "Oferta",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "select",
+          "id": "text_alignment",
+          "label": "Alinhamento do texto",
+          "options": [
+            {
+              "value": "start",
+              "label": "Esquerda"
+            },
+            {
+              "value": "center",
+              "label": "Centro"
+            }
+          ],
+          "default": "start"
+        },
+        {
+          "type": "select",
+          "id": "icon_position",
+          "label": "Posição do ícone",
+          "options": [
+            {
+              "value": "aligned",
+              "label": "Alinhado horizontalmente"
+            },
+            {
+              "value": "stacked",
+              "label": "Empilhado"
+            }
+          ],
+          "default": "aligned"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ícone",
+          "options": [
+            {
+              "value": "none",
+              "label": "Nenhum"
+            },
+            {
+              "value": "picto-coupon",
+              "label": "Cupom",
+              "group": "Shop"
+            },
+            {
+              "value": "picto-percent",
+              "label": "Percentual",
+              "group": "Shop"
+            },
+            {
+              "value": "picto-gift",
+              "label": "Presente",
+              "group": "Shop"
+            },
+            {
+              "value": "picto-star",
+              "label": "Estrela",
+              "group": "Shop"
+            },
+            {
+              "value": "picto-like",
+              "label": "Curtir",
+              "group": "Shop"
+            },
+            {
+              "value": "picto-building",
+              "label": "Prédio",
+              "group": "Shop"
+            },
+            {
+              "value": "picto-love",
+              "label": "Amor",
+              "group": "Shop"
+            },
+            {
+              "value": "picto-award-gift",
+              "label": "Prêmio",
+              "group": "Shop"
+            },
+            {
+              "value": "picto-happy",
+              "label": "Feliz",
+              "group": "Shop"
+            },
+            {
+              "value": "picto-box",
+              "label": "Caixa",
+              "group": "Shipping"
+            },
+            {
+              "value": "picto-pin",
+              "label": "Pin",
+              "group": "Shipping"
+            },
+            {
+              "value": "picto-timer",
+              "label": "Timer",
+              "group": "Shipping"
+            },
+            {
+              "value": "picto-validation",
+              "label": "Validação",
+              "group": "Shipping"
+            },
+            {
+              "value": "picto-truck",
+              "label": "Caminhão",
+              "group": "Shipping"
+            },
+            {
+              "value": "picto-return",
+              "label": "Retorno",
+              "group": "Shipping"
+            },
+            {
+              "value": "picto-earth",
+              "label": "Terra",
+              "group": "Shipping"
+            },
+            {
+              "value": "picto-plane",
+              "label": "Avião",
+              "group": "Shipping"
+            },
+            {
+              "value": "picto-credit-card",
+              "label": "Cartão de Crédito",
+              "group": "Payment & Security"
+            },
+            {
+              "value": "picto-lock",
+              "label": "Cadeado",
+              "group": "Payment & Security"
+            },
+            {
+              "value": "picto-shield",
+              "label": "Escudo",
+              "group": "Payment & Security"
+            },
+            {
+              "value": "picto-secure-profile",
+              "label": "Perfil Seguro",
+              "group": "Payment & Security"
+            },
+            {
+              "value": "picto-money",
+              "label": "Dinheiro",
+              "group": "Payment & Security"
+            },
+            {
+              "value": "picto-recycle",
+              "label": "Reciclar",
+              "group": "Ecology"
+            },
+            {
+              "value": "picto-leaf",
+              "label": "Folha",
+              "group": "Ecology"
+            },
+            {
+              "value": "picto-tree",
+              "label": "Árvore",
+              "group": "Ecology"
+            },
+            {
+              "value": "picto-mobile-phone",
+              "label": "Celular",
+              "group": "Communication"
+            },
+            {
+              "value": "picto-phone",
+              "label": "Telefone",
+              "group": "Communication"
+            },
+            {
+              "value": "picto-chat",
+              "label": "Chat",
+              "group": "Communication"
+            },
+            {
+              "value": "picto-customer-support",
+              "label": "Suporte ao Cliente",
+              "group": "Communication"
+            },
+            {
+              "value": "picto-operator",
+              "label": "Operador",
+              "group": "Communication"
+            },
+            {
+              "value": "picto-mailbox",
+              "label": "Caixa de Correio",
+              "group": "Communication"
+            },
+            {
+              "value": "picto-envelope",
+              "label": "Envelope",
+              "group": "Communication"
+            },
+            {
+              "value": "picto-comment",
+              "label": "Comentário",
+              "group": "Communication"
+            },
+            {
+              "value": "picto-question",
+              "label": "Pergunta",
+              "group": "Communication"
+            },
+            {
+              "value": "picto-send",
+              "label": "Enviar",
+              "group": "Communication"
+            },
+            {
+              "value": "picto-at-sign",
+              "label": "Arroba",
+              "group": "Tech"
+            },
+            {
+              "value": "picto-camera",
+              "label": "Câmera",
+              "group": "Tech"
+            },
+            {
+              "value": "picto-wifi",
+              "label": "WiFi",
+              "group": "Tech"
+            },
+            {
+              "value": "picto-bluetooth",
+              "label": "Bluetooth",
+              "group": "Tech"
+            },
+            {
+              "value": "picto-printer",
+              "label": "Impressora",
+              "group": "Tech"
+            },
+            {
+              "value": "picto-smart-watch",
+              "label": "Relógio Inteligente",
+              "group": "Tech"
+            },
+            {
+              "value": "picto-coffee",
+              "label": "Café",
+              "group": "Food & Drink"
+            },
+            {
+              "value": "picto-burger",
+              "label": "Hambúrguer",
+              "group": "Food & Drink"
+            },
+            {
+              "value": "picto-beer",
+              "label": "Cerveja",
+              "group": "Food & Drink"
+            },
+            {
+              "value": "picto-target",
+              "label": "Alvo",
+              "group": "Other"
+            },
+            {
+              "value": "picto-document",
+              "label": "Documento",
+              "group": "Other"
+            },
+            {
+              "value": "picto-jewelry",
+              "label": "Joia",
+              "group": "Other"
+            },
+            {
+              "value": "picto-music",
+              "label": "Música",
+              "group": "Other"
+            },
+            {
+              "value": "picto-file",
+              "label": "Arquivo",
+              "group": "Other"
+            },
+            {
+              "value": "picto-mask",
+              "label": "Máscara",
+              "group": "Other"
+            },
+            {
+              "value": "picto-stop",
+              "label": "Parar",
+              "group": "Other"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Ícone personalizado",
+          "info": "240 x 240px .png recomendado"
+        },
+        {
+          "type": "range",
+          "id": "icon_width",
+          "min": 20,
+          "max": 100,
+          "step": 4,
+          "unit": "px",
+          "label": "Largura do ícone",
+          "default": 24
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Cabeçalho",
+          "default": "Envio"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Conteúdo",
+          "default": "<p>Conteúdo breve sobre suas taxas de envio ou descontos.</p>"
+        },
+        {
+          "type": "color",
+          "id": "background",
+          "label": "Fundo"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Texto"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_shipping_estimator",
+      "label": "Mostrar estimador de envio",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": "Mostrar ícones de pagamento",
+      "default": true
+    }
+  ]
+}
+{% endschema %}
+
+<script>
+    let lastTotalPrice = 0; // Inicializa com o valor atual do carrinho via Liquid
+
+  function updateTruckPosition() {
+    
+        const totalPrice = cart.total_price;
+
+        if (totalPrice !== lastTotalPrice) {
+          lastTotalPrice = totalPrice; // Atualiza o último preço conhecido
+
+          const threshold = {{ settings.cart_free_shipping_threshold | times: 100.0 }};
+          let progressWidth, truckPosition;
+
+          if (totalPrice >= threshold) {
+            progressWidth = 100; // O caminhão e a barra de progresso alinham com o final quando o frete grátis é alcançado
+            truckPosition = 100;
+          } else {
+            progressWidth = 80; // A barra mostra 80% de progresso quando o frete grátis não é alcançado
+            truckPosition = 82; // Ajuste aqui para 82%, se desejar que o caminhão fique um pouco à frente da barra
+          }
+
+          const progressBarFill = document.getElementById('progress-fill');
+          if (progressBarFill) {
+            progressBarFill.style.width = `${progressWidth}%`;
+          const truckContainer = document.querySelector('.container-truck');
+
+                        truckContainer.style.width = `${truckPosition}%`; // Usa a porcentagem para posicionar o caminhão
+
+          }
+
+  
+      }
+  }
+
+  document.addEventListener('DOMContentLoaded', updateTruckPosition);
+
+    function timeOut() {
+      setInterval(updateTruckPosition, 1000);
+
+  }
+
+  setTimeout(timeOut, 10000)
+</script>

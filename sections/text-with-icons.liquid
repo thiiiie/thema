@@ -1,0 +1,619 @@
+{%- if section.blocks.size > 0 -%}
+  {%- render 'section-spacing-collapsing' -%}
+
+  <style>
+    #shopify-section-{{ section.id }} {
+      --text-with-icons-template: {% if section.settings.stack_on_mobile %}minmax(0, 1fr){% else %}auto-flow 100%{% endif %};
+      --text-with-icons-justify: center;
+      --text-with-icons-text-align: center;
+      --text-with-icons-gap: {% if section.settings.icon_spacing == 'small' %}var(--spacing-5){% elsif section.settings.icon_spacing == 'medium' %}var(--spacing-6){% else %}var(--spacing-7){% endif %};
+    }
+
+    {%- if section.settings.stack_on_mobile -%}
+      @media screen and (min-width: 699px) {
+        #shopify-section-{{ section.id }} {
+          --text-with-icons-template: repeat(2, minmax(0, 1fr));
+        }
+      }
+    {%- endif -%}
+
+    @media screen and (min-width: 1150px) {
+      #shopify-section-{{ section.id }} {
+        --text-with-icons-gap: {% if section.settings.icon_spacing == 'small' %}var(--spacing-5){% elsif section.settings.icon_spacing == 'medium' %}var(--spacing-6){% else %}var(--spacing-8){% endif %};
+      }
+    }
+
+    {%- if section.blocks.size <= 3 -%}
+      @media screen and (min-width: 1000px) {
+        #shopify-section-{{ section.id }} {
+          --text-with-icons-template: repeat({{ section.blocks.size }}, minmax(0, 630px));
+          --text-with-icons-justify: {% if section.settings.text_alignment == 'center' %}center{% else %}start{% endif %};
+          --text-with-icons-text-align: {% if section.settings.text_alignment == 'center' %}center{% else %}start{% endif %};
+        }
+      }
+    {%- else -%}
+      @media screen and (min-width: 1150px) {
+        #shopify-section-{{ section.id }} {
+          --text-with-icons-template: repeat({{ section.blocks.size }}, 1fr);
+          --text-with-icons-justify: {% if section.settings.text_alignment == 'center' %}center{% else %}start{% endif %};
+          --text-with-icons-text-align: {% if section.settings.text_alignment == 'center' %}center{% else %}start{% endif %};
+        }
+      }
+    {%- endif -%}
+  </style>
+
+  <div {% render 'section-properties' %}>
+    <div class="section-stack">
+      {%- if section.settings.title != blank -%}
+        <div class="justify-self-center">
+          <h2 class="h3">{{ section.settings.title | escape }}</h2>
+        </div>
+      {%- endif -%}
+
+      <div class="text-with-icons">
+        <scroll-carousel
+          class="text-with-icons__list scroll-area full-bleed {% if section.blocks.size <= 3 %}md:unbleed{% else %}lg:unbleed{% endif %}"
+          id="carousel-{{ section.id }}"
+          role="region"
+        >
+          {%- for block in section.blocks -%}
+            <div
+              id="block-{{ section.id }}-{{ block.id }}"
+              class="text-with-icons__item snap-center"
+              role="group"
+              aria-label="{{ 'general.accessibility.item_nth_of_count' | t: index: forloop.index, count: section.blocks.size }}"
+              {{ block.shopify_attributes }}
+            >
+              {%- capture icon -%}
+                {%- if block.settings.custom_icon != blank -%}
+                  {%- capture sizes -%}{{ block.settings.icon_width }}px{%- endcapture -%}
+                  {%- capture widths -%}{{ block.settings.icon_width }}, {{ block.settings.icon_width | times: 2 | at_most: block.settings.custom_icon.width }}{%- endcapture -%}
+                  {%- capture style -%}--mobile-icon-max-width: {{ block.settings.mobile_icon_width }}px; --icon-max-width: {{ block.settings.icon_width }}px{%- endcapture -%}
+                  {{- block.settings.custom_icon | image_url: width: block.settings.custom_icon.width | image_tag: loading: 'lazy', sizes: sizes, widths: widths, style: style, class: 'image-icon' -}}
+                {%- else -%}
+                  {%- render 'icon' with block.settings.icon, width: block.settings.mobile_icon_width, height: block.settings.mobile_icon_width, class: 'sm:hidden' -%}
+                  {%- render 'icon' with block.settings.icon, width: block.settings.icon_width, height: block.settings.icon_width, class: 'hidden sm:block' -%}
+                {%- endif -%}
+              {%- endcapture -%}
+
+              {%- if icon != blank -%}
+                {%- if block.settings.icon_background_type == 'none' -%}
+                  <div {% render 'surface', text_color: block.settings.icon_color %}>
+                    {{- icon -}}
+                  </div>
+                {%- else -%}
+                  {%- capture surface_class -%}icon-block {% if block.settings.icon_background_type == 'circle' %}rounded-full{% endif %}{%- endcapture -%}
+                  <div
+                    {% render 'surface',
+                      class: surface_class,
+                      background: block.settings.icon_background,
+                      text_color: block.settings.icon_color,
+                      background_fallback: 'bg-secondary'
+                    %}
+                  >
+                    {{- icon -}}
+                  </div>
+                {%- endif -%}
+              {%- endif -%}
+
+              <div class="text-with-icons__text-wrapper">
+                <div class="prose">
+                  {%- if block.settings.title != blank -%}
+                    <p class="{{ section.settings.heading_tag }}">{{ block.settings.title | escape }}</p>
+                  {%- endif -%}
+
+                  {{- block.settings.content -}}
+                </div>
+              </div>
+            </div>
+          {%- endfor -%}
+        </scroll-carousel>
+
+        {%- if section.blocks.size > 1 -%}
+          <page-dots aria-controls="carousel-{{ section.id }}" class="page-dots peer-not-scrollable:hidden">
+            {%- for index in (1..section.blocks.size) -%}
+              <button
+                type="button"
+                class="tap-area"
+                aria-current="{% if forloop.first %}true{% else %}false{% endif %}"
+              >
+                <span class="sr-only">{{ 'general.accessibility.go_to_item' | t: index: index }}</span>
+              </button>
+            {%- endfor -%}
+          </page-dots>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Texto com ícones",
+  "class": "shopify-section--text-with-icons",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "custom.overlay"]
+  },
+  "max_blocks": 5,
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Texto com ícone",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ícone",
+          "options": [
+            {
+              "value": "picto-coupon",
+              "label": "Cupom",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-percent",
+              "label": "Percentual",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-gift",
+              "label": "Presente",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-star",
+              "label": "Estrela",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-like",
+              "label": "Curtir",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-building",
+              "label": "Prédio",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-love",
+              "label": "Amor",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-award-gift",
+              "label": "Prêmio",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-happy",
+              "label": "Feliz",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-box",
+              "label": "Caixa",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-pin",
+              "label": "Pin",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-timer",
+              "label": "Temporizador",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-validation",
+              "label": "Validação",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-truck",
+              "label": "Caminhão",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-return",
+              "label": "Devolução",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-earth",
+              "label": "Terra",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-plane",
+              "label": "Avião",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-credit-card",
+              "label": "Cartão de crédito",
+              "group": "Pagamento & Segurança"
+            },
+            {
+              "value": "picto-lock",
+              "label": "Cadeado",
+              "group": "Pagamento & Segurança"
+            },
+            {
+              "value": "picto-shield",
+              "label": "Escudo",
+              "group": "Pagamento & Segurança"
+            },
+            {
+              "value": "picto-secure-profile",
+              "label": "Perfil seguro",
+              "group": "Pagamento & Segurança"
+            },
+            {
+              "value": "picto-money",
+              "label": "Dinheiro",
+              "group": "Pagamento & Segurança"
+            },
+            {
+              "value": "picto-recycle",
+              "label": "Reciclar",
+              "group": "Ecologia"
+            },
+            {
+              "value": "picto-leaf",
+              "label": "Folha",
+              "group": "Ecologia"
+            },
+            {
+              "value": "picto-tree",
+              "label": "Árvore",
+              "group": "Ecologia"
+            },
+            {
+              "value": "picto-mobile-phone",
+              "label": "Celular",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-phone",
+              "label": "Telefone",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-chat",
+              "label": "Chat",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-customer-support",
+              "label": "Suporte ao cliente",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-operator",
+              "label": "Operador",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-mailbox",
+              "label": "Caixa de correio",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-envelope",
+              "label": "Envelope",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-comment",
+              "label": "Comentário",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-question",
+              "label": "Pergunta",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-send",
+              "label": "Enviar",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-at-sign",
+              "label": "Arroba",
+              "group": "Tecnologia"
+            },
+            {
+              "value": "picto-camera",
+              "label": "Câmera",
+              "group": "Tecnologia"
+            },
+            {
+              "value": "picto-wifi",
+              "label": "WiFi",
+              "group": "Tecnologia"
+            },
+            {
+              "value": "picto-bluetooth",
+              "label": "Bluetooth",
+              "group": "Tecnologia"
+            },
+            {
+              "value": "picto-printer",
+              "label": "Impressora",
+              "group": "Tecnologia"
+            },
+            {
+              "value": "picto-smart-watch",
+              "label": "Relógio inteligente",
+              "group": "Tecnologia"
+            },
+            {
+              "value": "picto-coffee",
+              "label": "Café",
+              "group": "Comida & Bebida"
+            },
+            {
+              "value": "picto-burger",
+              "label": "Hambúrguer",
+              "group": "Comida & Bebida"
+            },
+            {
+              "value": "picto-beer",
+              "label": "Cerveja",
+              "group": "Comida & Bebida"
+            },
+            {
+              "value": "picto-target",
+              "label": "Alvo",
+              "group": "Outros"
+            },
+            {
+              "value": "picto-document",
+              "label": "Documento",
+              "group": "Outros"
+            },
+            {
+              "value": "picto-jewelry",
+              "label": "Joia",
+              "group": "Outros"
+            },
+            {
+              "value": "picto-music",
+              "label": "Música",
+              "group": "Outros"
+            },
+            {
+              "value": "picto-file",
+              "label": "Arquivo",
+              "group": "Outros"
+            },
+            {
+              "value": "picto-mask",
+              "label": "Máscara",
+              "group": "Outros"
+            },
+            {
+              "value": "picto-stop",
+              "label": "Parar",
+              "group": "Outros"
+            }
+          ],
+          "default": "picto-coupon"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Ícone personalizado",
+          "info": "Recomendado 240 x 240px .png"
+        },
+        {
+          "type": "range",
+          "id": "mobile_icon_width",
+          "min": 24,
+          "max": 120,
+          "step": 4,
+          "unit": "px",
+          "label": "Largura do ícone no celular",
+          "default": 24
+        },
+        {
+          "type": "range",
+          "id": "icon_width",
+          "min": 24,
+          "max": 120,
+          "step": 4,
+          "unit": "px",
+          "label": "Largura do ícone",
+          "default": 32
+        },
+        {
+          "type": "select",
+          "id": "icon_background_type",
+          "label": "Tipo de fundo do ícone",
+          "options": [
+            {
+              "value": "none",
+              "label": "Nenhum"
+            },
+            {
+              "value": "square",
+              "label": "Quadrado"
+            },
+            {
+              "value": "circle",
+              "label": "Círculo"
+            }
+          ],
+          "default": "circle"
+        },
+        {
+          "type": "color",
+          "id": "icon_background",
+          "label": "Fundo do ícone"
+        },
+        {
+          "type": "color",
+          "id": "icon_color",
+          "label": "Cor do ícone",
+          "info": "Não tem efeito ao usar ícone personalizado."
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Título",
+          "default": "Título"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Conteúdo",
+          "default": "<p>Conteúdo curto sobre sua loja</p>"
+        }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Largura completa",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "stack_on_mobile",
+      "label": "Empilhar no celular",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Título"
+    },
+    {
+      "type": "header",
+      "content": "Item"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Tamanho do título",
+      "options": [
+        {
+          "value": "h1",
+          "label": "H1"
+        },
+        {
+          "value": "h2",
+          "label": "H2"
+        },
+        {
+          "value": "h3",
+          "label": "H3"
+        },
+        {
+          "value": "h4",
+          "label": "H4"
+        },
+        {
+          "value": "h5",
+          "label": "H5"
+        },
+        {
+          "value": "h6",
+          "label": "H6"
+        }
+      ],
+      "default": "h5"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Alinhamento do texto (desktop)",
+      "options": [
+        {
+          "value": "start",
+          "label": "Esquerda"
+        },
+        {
+          "value": "center",
+          "label": "Centro"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "icon_spacing",
+      "label": "Espaçamento do ícone",
+      "options": [
+        {
+          "value": "small",
+          "label": "Pequeno"
+        },
+        {
+          "value": "medium",
+          "label": "Médio"
+        },
+        {
+          "value": "large",
+          "label": "Grande"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "header",
+      "content": "Cores",
+      "info": "Gradiente substitui cores sólidas quando configurado."
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Fundo"
+    },
+    {
+      "type": "color_background",
+      "id": "background_gradient",
+      "label": "Gradiente de fundo"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Texto"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Texto com ícones",
+      "blocks": [
+        {
+          "type": "item",
+          "settings": {
+            "title": "Envio grátis",
+            "content": "<p>Envio grátis para todo o mundo e devoluções - impostos e taxas alfandegárias incluídos</p>"
+          }
+        },
+        {
+          "type": "item",
+          "settings": {
+            "title": "Atendimento ao cliente",
+            "content": "<p>Estamos disponíveis de segunda a sexta para responder suas perguntas.</p>"
+          }
+        },
+        {
+          "type": "item",
+          "settings": {
+            "title": "Pagamento seguro",
+            "content": "<p>Suas informações de pagamento são processadas de forma segura.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

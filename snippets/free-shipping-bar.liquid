@@ -1,0 +1,172 @@
+{%- comment -%}
+  ----------------------------------------------------------------------------------------------------------------------
+  FREE SHIPPING BAR
+  ----------------------------------------------------------------------------------------------------------------------
+
+  Renders the free shipping bar component. It is used on cart page and cart drawer to render the remaining amount before
+  being eligible for free shipping.
+
+  ********************************************
+  Supported letiables
+  ********************************************
+
+  * size: accept the value "sm"
+{%- endcomment -%}
+
+{%- liquid
+  assign calculated_total_price = 0
+
+  for line_item in cart.items
+    if line_item.requires_shipping
+      assign calculated_total_price = calculated_total_price | plus: line_item.final_line_price
+    endif
+  endfor
+
+  # We have to remove the cart level discount from the calculated amount
+
+  assign total_cart_discount = 0
+
+  for discount_application in cart.cart_level_discount_applications
+    assign total_cart_discount = total_cart_discount | plus: discount_application.total_allocated_amount
+  endfor
+
+  assign calculated_total_price = calculated_total_price | minus: total_cart_discount
+-%}
+
+{%- if cart.requires_shipping -%}
+  <free-shipping-bar
+    class="free-shipping-bar"
+    threshold="{{ settings.cart_free_shipping_threshold | times: 100.0 }}"
+    total-price="{{ calculated_total_price }}"
+    reached-message="{{ 'cart.free_shipping_bar.limit_reached_html' | t | escape }}"
+    unreached-message="{{ 'cart.free_shipping_bar.limit_unreached_html' | t | escape }}"
+  >
+    {%- comment -%}The span below is the placeholder where the content will be inserted in JS{%- endcomment -%}
+    <span>&nbsp;</span>
+
+    <progress-bar style="margin-top: -100px;">
+      <div class="container-truck">
+        <svg
+          id="progress-truck"
+          xmlns="http://www.w3.org/2000/svg"
+          width="34"
+          height="34"
+          viewBox="0 0 24 24"
+          style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"
+        >
+          <path d="M19.15 8a2 2 0 0 0-1.72-1H15V5a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v10a2 2 0 0 0 1 1.73 3.49 3.49 0 0 0 7 .27h3.1a3.48 3.48 0 0 0 6.9 0 2 2 0 0 0 2-2v-3a1.07 1.07 0 0 0-.14-.52zM15 9h2.43l1.8 3H15zM6.5 19A1.5 1.5 0 1 1 8 17.5 1.5 1.5 0 0 1 6.5 19zm10 0a1.5 1.5 0 1 1 1.5-1.5 1.5 1.5 0 0 1-1.5 1.5z"></path>
+        </svg>
+      </div>
+
+      <div id="progress-container">
+        <div id="progress-bar">
+          <div id="progress-fill"></div>
+        </div>
+      </div>
+    </progress-bar>
+  </free-shipping-bar>
+{%- endif -%}
+
+<style>
+                  #progress-container {
+                  width: 100%;
+                  background-color: #ddd;
+                  border-radius: 10px;
+                  overflow: hidden;
+                  margin-top: 50px; /* Garantir algum espaço na parte superior para o caminhão */
+                }
+
+                #progress-bar {
+                  width: 100%;
+                  height: 14px;
+                  background-color: #ddd;
+                  position: relative;
+                  overflow: hidden;
+                  z-index: 2;
+                }
+
+                @keyframes moveBackground {
+                  from { background-position: 0 0; }
+                  to { background-position: 400px 0; }
+                }
+
+                #progress-fill {
+                  width: 100%;
+                    transition: 1s ease;
+                  height: 100%;
+                  background-image: repeating-linear-gradient(
+    -45deg,
+    {{ settings.ship_secondary_color | default: '#00ff00' }},
+    {{ settings.ship_secondary_color | default: '#00ff00' }} 10px,
+    {{ settings.ship_primary_color | default: '#ff0000' }} 10px,
+    {{ settings.ship_primary_color | default: '#ff0000' }} 20px
+  );
+                  left: 0;
+                  animation: moveBackground 10s linear infinite; /* Ajustado para movimento contínuo */
+                }
+
+               .container-truck {
+          height: 50px;
+          z-index: 3; /* Ajustado para ficar acima da barra de progresso */
+          text-align: end;
+          position: relative; /* Adicionado para garantir que z-index funcione */
+                                     transition: 1s ease;
+
+        }
+
+        #progress-truck {
+          background-color: #fff;
+          padding: 5px;
+          border: 2px solid #000;
+          border-radius: 50px;
+          margin-bottom: -105px;
+          position: relative; /* Se necessário, ajuste a posição aqui também */
+        }
+
+        #cart-drawer > div:nth-child(1) > div.cart-drawer__top > free-shipping-bar > span, #shopify-section-template--22241715552559__main > div > div > div > div.cart-header > free-shipping-bar > span {
+          text-align: center;
+          font-weight: bold;
+          font-size: 18px;
+        }
+</style>
+
+<script>
+  
+  let lastTotalPrice = 0;
+
+  function updateTruckPosition() {
+    fetch('/cart.js')
+      .then(response => response.json())
+      .then(cart => {
+        const totalPrice = cart.total_price;
+
+        if (totalPrice !== lastTotalPrice) {
+          lastTotalPrice = totalPrice;
+
+          const threshold = 30000.0;
+          let progressWidth, truckPosition;
+
+          if (totalPrice >= threshold) {
+            progressWidth = 100;
+            truckPosition = 100;
+          } else {
+            progressWidth = 80;
+            truckPosition = 82;
+          }
+
+          const progressBarFill = document.getElementById('progress-fill');
+          if (progressBarFill) {
+            progressBarFill.style.width = `${progressWidth}%`;
+          const truckContainer = document.querySelector('.container-truck');
+
+                        truckContainer.style.width = `${truckPosition}%`;
+
+          }
+        }
+      })
+      .catch(error => console.error('Error fetching cart:', error));
+  }
+
+  document.addEventListener('DOMContentLoaded', updateTruckPosition);
+  setInterval(updateTruckPosition, 3000);
+</script>

@@ -1,0 +1,75 @@
+{%- if section.settings.html != blank -%}
+  <style>
+    #shopify-section-{{ section.id }} {
+      {% if section.settings.remove_vertical_spacing %}--section-spacing-block: 0px;{% endif %}
+      {% if section.settings.remove_horizontal_spacing %}--section-spacing-inline: 0px;{% endif %}
+    }
+  </style>
+
+  {%- render 'section-spacing-collapsing' -%}
+
+  <div {% render 'section-properties' %}>
+    {{ section.settings.html }}
+  </div>
+{%- endif -%}
+{% schema %}
+{
+  "name": "HTML Personalizado",
+  "class": "shopify-section--custom-html",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["custom.overlay"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Largura total",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_vertical_spacing",
+      "label": "Remover espaçamento vertical",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "remove_horizontal_spacing",
+      "label": "Remover espaçamento horizontal",
+      "default": false
+    },
+    {
+      "type": "html",
+      "id": "html",
+      "label": "HTML",
+      "default": "<p style=\"text-align: center\">Escreva ou copie/cole o código HTML</p>"
+    },
+    {
+      "type": "header",
+      "content": "Cores",
+      "info": "Gradiente substitui cores sólidas quando configurado."
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Fundo"
+    },
+    {
+      "type": "color_background",
+      "id": "background_gradient",
+      "label": "Gradiente de fundo"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Texto"
+    }
+  ],
+  "presets": [
+    {
+      "name": "HTML Personalizado"
+    }
+  ]
+}
+{% endschema %}

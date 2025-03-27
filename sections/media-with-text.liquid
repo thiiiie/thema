@@ -1,0 +1,675 @@
+{%- render 'section-spacing-collapsing' -%}
+
+{%- comment -%}
+  ------------------------------------------------------------------------------------------------------------------------
+  CSS
+  ------------------------------------------------------------------------------------------------------------------------
+{%- endcomment -%}
+
+<style>
+  #shopify-section-{{ section.id }} {
+    --media-with-text-gap: {% if section.settings.spacing == 'none' %}0{% else %}var(--grid-gutter){% endif %};
+    --media-with-text-item-grid-template: "media" "content" / auto;
+  }
+
+  @media screen and (min-width: 1000px) {
+    #shopify-section-{{ section.id }} {
+      --media-with-text-gap: {% if section.settings.spacing == 'none' %}0{% elsif section.settings.spacing == 'small' %}var(--spacing-6){% elsif section.settings.spacing == 'medium' %}var(--spacing-12){% else %}var(--spacing-18){% endif %};
+    }
+  }
+
+  {%- for block in section.blocks -%}
+    {%- assign media_ratio = block.settings.media_width | divided_by: 50.0 -%}
+    {%- assign content_ratio = 2.0 | minus: media_ratio -%}
+
+    #block-{{ section.id }}-{{ block.id }} {
+      --media-with-text-item-icon-width: {{ block.settings.icon_width }}px;
+    }
+
+    @media screen and (min-width: 1000px) {
+      #block-{{ section.id }}-{{ block.id }} {
+        --media-with-text-item-grid-template: {% if block.settings.media_position == 'start' %}"media content" / minmax(0, {{ media_ratio }}fr) minmax(0, {{ content_ratio }}fr){% else %}"content media" / minmax(0, {{ content_ratio }}fr) minmax(0, {{ media_ratio }}fr){% endif %};
+      }
+    }
+  {%- endfor -%}
+</style>
+
+{%- comment -%}
+  ------------------------------------------------------------------------------------------------------------------------
+  LIQUID
+  ------------------------------------------------------------------------------------------------------------------------
+{%- endcomment -%}
+
+<div {% render 'section-properties' %}>
+  <media-with-text class="media-with-text {% if section.settings.spacing == 'none' %}{% if section.settings.full_width %}full-bleed{% else %}rounded{% endif %}{% endif %}">
+    {%- for block in section.blocks -%}
+      <div id="block-{{ section.id }}-{{ block.id }}" class="media-with-text__item" {{ block.shopify_attributes }}>
+        <div
+          class="media-with-text__media {% unless section.settings.spacing == 'none' %}rounded{% endunless %}"
+          reveal-on-scroll="true"
+        >
+          {%- if block.type == 'image' -%}
+            {%- if block.settings.image != blank -%}
+              {%- assign width_ratio = 100.0 | divided_by: block.settings.media_width -%}
+              {%- assign maximum_image_width = settings.page_width | divided_by: width_ratio -%}
+
+              {%- capture sizes -%}(max-width: 999px) 100vw, min({{ maximum_image_width | ceil }}px, {{ block.settings.media_width }}vw){% endcapture %}
+
+              {{-
+                block.settings.image
+                | image_url: width: block.settings.image.width
+                | image_tag:
+                  loading: 'lazy',
+                  sizes: sizes,
+                  widths: '300,400,500,600,700,800,1000,1200,1400,1600,1800,2000,2200,2400,2600'
+              -}}
+            {%- else -%}
+              {{- 'image' | placeholder_svg_tag: 'aspect-short placeholder' -}}
+            {%- endif -%}
+          {%- else -%}
+            {%- capture poster -%}
+              {%- assign poster_image = block.settings.poster_image | default: block.settings.video.preview_image -%}
+
+              {%- if poster_image -%}
+                {{- poster_image | image_url: width: poster_image.width | image_tag: loading: 'lazy', sizes: '(max-width: 699px) 400px, 800px', widths: '200,300,400,500,600,700,800,1000,1200,1400,1600,1800,2000,2200,2400,2600,2800,3000,3200', class: 'rounded' -}}
+              {%- else -%}
+                {{ 'image' | placeholder_svg_tag: 'rounded' }}
+              {%- endif -%}
+            {%- endcapture -%}
+
+            {%- if block.settings.video -%}
+              <video-media
+                {% if block.settings.autoplay %}
+                  autoplay
+                {% else %}
+                  show-play-button
+                {% endif %}
+              >
+                {%- unless block.settings.autoplay -%}
+                  {{- poster -}}
+                {%- endunless -%}
+
+                {%- if block.settings.autoplay -%}
+                  {{-
+                    block.settings.video
+                    | video_tag: playslinline: true, muted: true, loop: true, preload: 'metadata'
+                  -}}
+                {%- else -%}
+                  {{-
+                    block.settings.video
+                    | video_tag: playslinline: true, controls: true, muted: false, loop: false, preload: 'metadata'
+                  -}}
+                {%- endif -%}
+              </video-media>
+            {%- else -%}
+              <video-media
+                host="{{ block.settings.external_video_url.type }}"
+                {% if block.settings.autoplay %}
+                  autoplay
+                {% else %}
+                  show-play-button
+                {% endif %}
+              >
+                {%- unless block.settings.autoplay -%}
+                  {{- poster -}}
+                {%- endunless -%}
+
+                <template>
+                  {%- if block.settings.external_video_url.type == 'youtube' -%}
+                    <iframe
+                      src="https://www.youtube.com/embed/{{ block.settings.external_video_url.id }}?playsinline=1&autoplay=1&controls=0&mute={% if block.settings.autoplay %}1{% else %}0{% endif %}&loop=1&playlist={{ block.settings.external_video_url.id }}&enablejsapi=1&rel=0&modestbranding=1&origin={{ 'https://' | append: request.host | url_encode }}"
+                      allow="autoplay; encrypted-media"
+                      allowfullscreen="allowfullscreen"
+                    ></iframe>
+                  {%- elsif block.settings.external_video_url.type == 'vimeo' -%}
+                    <iframe
+                      src="https://player.vimeo.com/video/{{ block.settings.external_video_url.id }}?autoplay=1&autopause=1&background=1&loop=1&muted={% if block.settings.autoplay %}1{% else %}0{% endif %}&transparent=0&responsive=1&portrait=0&title=0&byline=0&color={{ settings.text_color | remove_first: '#' }}"
+                      allow="autoplay; encrypted-media;"
+                      allowfullscreen="allowfullscreen"
+                    ></iframe>
+                  {%- endif -%}
+                </template>
+              </video-media>
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+
+        {%- capture content_class -%}media-with-text__content {% unless section.settings.spacing == 'none' %}rounded{% endunless %}{%- endcapture -%}
+        <div
+          {% render 'surface',
+            class: content_class,
+            background: block.settings.background,
+            background_gradient: block.settings.background_gradient,
+            text_color: block.settings.text_color
+          %}
+        >
+          <div class="prose break-all {{ block.settings.text_position }}" reveal-on-scroll="true">
+            {%- if block.settings.custom_icon != blank -%}
+              {%- capture sizes -%}{{ block.settings.icon_width }}px{%- endcapture -%}
+              {%- capture widths -%}{{ block.settings.icon_width }}, {{ block.settings.icon_width | times: 2 | at_most: block.settings.custom_icon.width }}{%- endcapture -%}
+              {{-
+                block.settings.custom_icon
+                | image_url: width: block.settings.custom_icon.width
+                | image_tag: loading: 'lazy', sizes: sizes, widths: widths, class: 'media-with-text__icon'
+              -}}
+            {%- elsif block.settings.icon != 'none' -%}
+              {%- render 'icon' with block.settings.icon,
+                width: block.settings.icon_width,
+                height: block.settings.icon_width,
+                class: 'media-with-text__icon'
+              -%}
+            {%- endif -%}
+
+            {%- if block.settings.subheading != blank -%}
+              <p class="bold">{{ block.settings.subheading | escape }}</p>
+            {%- endif -%}
+
+            {%- if block.settings.title != blank -%}
+              <p class="h2">
+                {%- render 'styled-text', content: block.settings.title, gradient: block.settings.text_gradient -%}
+              </p>
+            {%- endif -%}
+
+            {{- block.settings.content -}}
+
+            {%- if block.settings.link_text != blank -%}
+              {%- render 'button',
+                href: block.settings.link_url,
+                content: block.settings.link_text,
+                size: 'xl',
+                background: block.settings.button_background,
+                text_color: block.settings.button_text_color
+              -%}
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+    {%- endfor -%}
+  </media-with-text>
+</div>
+
+{% schema %}
+{
+  "name": "Mídia com Texto",
+  "class": "shopify-section--media-with-text",
+  "tag": "section",
+  "disabled_on": {
+    "templates": ["password"],
+    "groups": ["header", "custom.overlay"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Largura total",
+      "info": "Só tem efeito quando o espaçamento está definido como nenhum.",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "spacing",
+      "label": "Espaçamento",
+      "options": [
+        {
+          "value": "none",
+          "label": "Nenhum"
+        },
+        {
+          "value": "small",
+          "label": "Pequeno"
+        },
+        {
+          "value": "medium",
+          "label": "Médio"
+        },
+        {
+          "value": "large",
+          "label": "Grande"
+        }
+      ],
+      "default": "small"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Imagem",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagem",
+          "info": "1500 x 1500px .jpg recomendado"
+        },
+        {
+          "type": "range",
+          "id": "media_width",
+          "label": "Largura da imagem",
+          "min": 30,
+          "max": 60,
+          "step": 5,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "select",
+          "id": "media_position",
+          "label": "Posição da imagem",
+          "options": [
+            {
+              "value": "start",
+              "label": "Esquerda"
+            },
+            {
+              "value": "end",
+              "label": "Direita"
+            }
+          ],
+          "default": "start"
+        },
+        {
+          "type": "select",
+          "id": "text_position",
+          "label": "Posição do conteúdo",
+          "options": [
+            {
+              "value": "place-self-start text-start",
+              "label": "Topo esquerda"
+            },
+            {
+              "value": "place-self-start-center text-center",
+              "label": "Topo centro"
+            },
+            {
+              "value": "place-self-start-end text-end",
+              "label": "Topo direita"
+            },
+            {
+              "value": "place-self-center-start text-start",
+              "label": "Centro esquerda"
+            },
+            {
+              "value": "place-self-center text-center",
+              "label": "Centro centro"
+            },
+            {
+              "value": "place-self-center-end text-end",
+              "label": "Centro direita"
+            },
+            {
+              "value": "place-self-end-start text-start",
+              "label": "Baixo esquerda"
+            },
+            {
+              "value": "place-self-end-center text-center",
+              "label": "Baixo centro"
+            },
+            {
+              "value": "place-self-end text-end",
+              "label": "Baixo direita"
+            }
+          ],
+          "default": "place-self-center text-center"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ícone",
+          "options": [
+            {
+              "value": "none",
+              "label": "Nenhum"
+            },
+            {
+              "value": "picto-coupon",
+              "label": "Cupom",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-percent",
+              "label": "Percentual",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-gift",
+              "label": "Presente",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-star",
+              "label": "Estrela",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-like",
+              "label": "Curtir",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-building",
+              "label": "Prédio",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-love",
+              "label": "Amor",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-award-gift",
+              "label": "Prêmio",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-happy",
+              "label": "Feliz",
+              "group": "Loja"
+            },
+            {
+              "value": "picto-box",
+              "label": "Caixa",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-pin",
+              "label": "Pin",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-timer",
+              "label": "Temporizador",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-validation",
+              "label": "Validação",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-truck",
+              "label": "Caminhão",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-return",
+              "label": "Retorno",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-earth",
+              "label": "Terra",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-plane",
+              "label": "Avião",
+              "group": "Envio"
+            },
+            {
+              "value": "picto-credit-card",
+              "label": "Cartão de crédito",
+              "group": "Pagamento & Segurança"
+            },
+            {
+              "value": "picto-lock",
+              "label": "Cadeado",
+              "group": "Pagamento & Segurança"
+            },
+            {
+              "value": "picto-shield",
+              "label": "Escudo",
+              "group": "Pagamento & Segurança"
+            },
+            {
+              "value": "picto-secure-profile",
+              "label": "Perfil seguro",
+              "group": "Pagamento & Segurança"
+            },
+            {
+              "value": "picto-money",
+              "label": "Dinheiro",
+              "group": "Pagamento & Segurança"
+            },
+            {
+              "value": "picto-recycle",
+              "label": "Reciclar",
+              "group": "Ecologia"
+            },
+            {
+              "value": "picto-leaf",
+              "label": "Folha",
+              "group": "Ecologia"
+            },
+            {
+              "value": "picto-tree",
+              "label": "Árvore",
+              "group": "Ecologia"
+            },
+            {
+              "value": "picto-mobile-phone",
+              "label": "Celular",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-phone",
+              "label": "Telefone",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-chat",
+              "label": "Chat",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-customer-support",
+              "label": "Suporte ao cliente",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-operator",
+              "label": "Operador",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-mailbox",
+              "label": "Caixa de correio",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-envelope",
+              "label": "Envelope",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-comment",
+              "label": "Comentário",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-question",
+              "label": "Pergunta",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-send",
+              "label": "Enviar",
+              "group": "Comunicação"
+            },
+            {
+              "value": "picto-at-sign",
+              "label": "Arroba",
+              "group": "Tecnologia"
+            },
+            {
+              "value": "picto-camera",
+              "label": "Câmera",
+              "group": "Tecnologia"
+            },
+            {
+              "value": "picto-wifi",
+              "label": "Wi-Fi",
+              "group": "Tecnologia"
+            },
+            {
+              "value": "picto-bluetooth",
+              "label": "Bluetooth",
+              "group": "Tecnologia"
+            },
+            {
+              "value": "picto-printer",
+              "label": "Impressora",
+              "group": "Tecnologia"
+            },
+            {
+              "value": "picto-smart-watch",
+              "label": "Relógio inteligente",
+              "group": "Tecnologia"
+            },
+            {
+              "value": "picto-coffee",
+              "label": "Café",
+              "group": "Comida & Bebida"
+            },
+            {
+              "value": "picto-burger",
+              "label": "Hambúrguer",
+              "group": "Comida & Bebida"
+            },
+            {
+              "value": "picto-beer",
+              "label": "Cerveja",
+              "group": "Comida & Bebida"
+            },
+            {
+              "value": "picto-target",
+              "label": "Alvo",
+              "group": "Outros"
+            },
+            {
+              "value": "picto-document",
+              "label": "Documento",
+              "group": "Outros"
+            },
+            {
+              "value": "picto-jewelry",
+              "label": "Joia",
+              "group": "Outros"
+            },
+            {
+              "value": "picto-music",
+              "label": "Música",
+              "group": "Outros"
+            },
+            {
+              "value": "picto-file",
+              "label": "Arquivo",
+              "group": "Outros"
+            },
+            {
+              "value": "picto-mask",
+              "label": "Máscara",
+              "group": "Outros"
+            },
+            {
+              "value": "picto-stop",
+              "label": "Parar",
+              "group": "Outros"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_icon",
+          "label": "Ícone personalizado",
+          "info": "240 x 240px .png recomendado"
+        },
+        {
+          "type": "range",
+          "id": "icon_width",
+          "min": 24,
+          "max": 120,
+          "step": 4,
+          "unit": "px",
+          "label": "Largura do ícone",
+          "default": 48
+        },
+        {
+          "type": "text",
+          "id": "subheading",
+          "label": "Subtítulo"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Título",
+          "default": "Título"
+        },
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Conteúdo",
+          "default": "<p>Use este texto para compartilhar informações sobre sua marca com seus clientes. Descreva um produto, compartilhe anúncios ou dê as boas-vindas aos clientes em sua loja.</p>"
+        },
+        {
+          "type": "text",
+          "id": "link_text",
+          "label": "Texto do botão"
+        },
+        {
+          "type": "url",
+          "id": "link_url",
+          "label": "URL do botão"
+        },
+        {
+          "type": "header",
+          "content": "Cores",
+          "info": "Gradiente substitui cores sólidas quando configurado. Fundo é ignorado quando imagem é usada."
+        },
+        {
+          "type": "color",
+          "id": "background",
+          "label": "Fundo",
+          "default": "#000000"
+        },
+        {
+          "type": "color_background",
+          "id": "background_gradient",
+          "label": "Gradiente de fundo"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Texto",
+          "default": "#ffffff"
+        },
+        {
+          "type": "color_background",
+          "id": "text_gradient",
+          "label": "Gradiente do texto"
+        },
+        {
+          "type": "color",
+          "id": "button_background",
+          "label": "Fundo do botão"
+        },
+        {
+          "type": "color",
+          "id": "button_text_color",
+          "label": "Texto do botão"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Mídia com Texto",
+      "blocks": [
+        {
+          "type": "image"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

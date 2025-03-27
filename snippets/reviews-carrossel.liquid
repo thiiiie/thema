@@ -1,0 +1,283 @@
+<div class="reviews-carousel-container">
+  <div class="reviews-carousel">
+    <!-- Avaliação 1 -->
+    {% if section.settings.review_1 %}
+    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+      {% if section.settings.reviews_image_1 %}
+      <img src="{{ section.settings.reviews_image_1 | img_url: '150x150' }}" alt="Cliente 1" class="review-customer-image">
+      {% else %}
+        <svg
+            class="review-customer-image"
+            fill="#ccc"
+            height="50"
+            viewBox="0 0 24 24"
+            width="50"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            <path d="M0 0h24v24H0z" fill="none"/>
+          </svg>
+      {% endif %}
+      <div class="review-content">
+        <p class="review-text">{{ section.settings.reviews_coment_1 }}</p>
+        <hr>
+        <div class="rating-and-author">
+        
+        <div class="review-rating">
+          {% for star in (1..section.settings.reviews_star_1) %}★{% endfor %}
+        </div>
+        <p class="review-author">{{ section.settings.reviews_customer_1 }}</p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if section.settings.review_2 %}
+    <div class="carousel-item">
+      {% if section.settings.reviews_image_2 %}
+      <img src="{{ section.settings.reviews_image_2 | img_url: '150x150' }}" alt="Cliente 2" class="review-customer-image">
+      {% else %}
+        <svg
+            class="review-customer-image"
+            fill="#ccc"
+            height="50"
+            viewBox="0 0 24 24"
+            width="50"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            <path d="M0 0h24v24H0z" fill="none"/>
+          </svg>
+      {% endif %}
+      <div class="review-content">
+        <p class="review-text">{{ section.settings.reviews_coment_2 }}</p>
+        <hr>
+        <div class="rating-and-author">
+        <div class="review-rating">
+          {% for star in (1..section.settings.reviews_star_2) %}★{% endfor %}
+        </div>
+        <p class="review-author">{{ section.settings.reviews_customer_2 }}</p>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if section.settings.review_3 %}
+    <div class="carousel-item">
+      {% if section.settings.reviews_image_3 %}
+      <img src="{{ section.settings.reviews_image_3 | img_url: '150x150' }}" alt="Cliente 3" class="review-customer-image">
+      {% else %}
+        <svg
+            class="review-customer-image"
+            fill="#ccc"
+            height="50"
+            viewBox="0 0 24 24"
+            width="50"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            <path d="M0 0h24v24H0z" fill="none"/>
+          </svg>
+      {% endif %}
+      <div class="review-content">
+        <p class="review-text">{{ section.settings.reviews_coment_3 }}</p>
+        <hr>
+        <div class="rating-and-author">
+        <div class="review-rating">
+          {% for star in (1..section.settings.reviews_star_3) %}★{% endfor %}
+        </div>
+        <p class="review-author">{{ section.settings.reviews_customer_3 }}</p>
+      </div>
+        </div>
+    </div>
+    {% endif %}
+  </div>
+  {% if section.settings.review_1 and section.settings.review_2 or section.settings.review_1 and section.settings.review_3 or section.settings.review_2 and section.settings.review_3 %}
+  <div class="reviews-navigation">
+    <button class="carousel-control-prev">‹</button>
+    <div class="reviews-indicators">
+      {% if section.settings.review_1 %}<span class="indicator active" data-review="1"></span>{% endif %}
+      {% if section.settings.review_2 %}<span class="indicator {% if section.settings.review_1 %}""{% else %}"active"{% endif %}" data-review="2"></span>{% endif %}
+      {% if section.settings.review_3 %}<span class="indicator {% if section.settings.review_1 or section.settings.review_2 %}""{% else %}"active"{% endif %}" data-review="3"></span>{% endif %}
+    </div>
+    <button class="carousel-control-next">›</button>
+  </div>
+  {% endif %}
+</div>
+              
+
+
+<style>
+.reviews-carousel-container {
+  width: 100%;
+  max-width: 600px;
+  overflow: hidden;
+  position: relative;
+    background-color: {{section.settings.review_background}};  
+  padding: 20px;
+  border-radius: 32px;
+}
+
+.reviews-carousel {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: scroll;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.reviews-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-item {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  text-align: left;
+}
+
+.review-customer-image {
+  width: 70px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #f3f3f3;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.review-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  margin-left: 15px;
+}
+
+.review-text {
+  max-width: 350px;
+  line-height: 1.2;
+  color: {{section.settings.review_text_color}};
+}
+
+.review-rating {
+  color: {{section.settings.review_star_color}};
+  font-size: 18px;
+}
+
+.review-author {
+  font-style: italic;
+}
+
+.reviews-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.rating-and-author {
+  display: flex !important;
+  align-items: center;
+  flex-direction: row-reverse;
+  gap: 10px;
+  justify-content: start;
+  margin-top: -5px;
+  font-size: 14px;
+  color: {{section.settings.review_answer_color}};
+}
+
+.reviews-indicators {
+  display: flex;
+  gap: 7px;
+}
+
+.indicator {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1.4px solid #ccc;
+  display: inline-block;
+}
+
+.indicator.active {
+  background-color: #333;
+}
+
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const carousel = document.querySelector('.reviews-carousel');
+    const slides = document.querySelectorAll('.carousel-item');
+    const indicators = document.querySelectorAll('.indicator');
+    let autoSlideTimeout;
+    
+    function getCurrentSlideIndex() {
+        const scrollLeft = carousel.scrollLeft;
+        const slideWidth = carousel.offsetWidth;
+        const index = Math.round(scrollLeft / slideWidth);
+        return index;
+    }
+
+    function updateActiveSlide(index) {
+        indicators.forEach((indicator, i) => {
+            indicator.classList.toggle('active', i === index);
+        });
+    }
+
+    function scrollToSlide(index) {
+        const slideWidth = carousel.offsetWidth;
+        const newScrollPosition = slideWidth * index;
+        carousel.scrollTo({
+            left: newScrollPosition,
+            behavior: 'smooth'
+        });
+        updateActiveSlide(index);
+    }
+    
+    carousel.addEventListener('scroll', () => {
+        clearTimeout(autoSlideTimeout);
+        autoSlideTimeout = setTimeout(() => {
+            const index = getCurrentSlideIndex();
+            updateActiveSlide(index);
+        }, 150);
+    });
+
+    function setupAutoSlide() {
+    clearInterval(autoSlideTimeout);
+    autoSlideTimeout = setInterval(() => {
+        let index = getCurrentSlideIndex();
+        index = (index + 1) % slides.length;
+        scrollToSlide(index);
+    }, 7000);
+}
+
+    setupAutoSlide();
+    updateActiveSlide(0);
+    
+    document.querySelector('.carousel-control-prev').addEventListener('click', () => {
+        let index = getCurrentSlideIndex();
+        index = index - 1 < 0 ? slides.length - 1 : index - 1;
+        scrollToSlide(index);
+        setupAutoSlide();
+    });
+
+    document.querySelector('.carousel-control-next').addEventListener('click', () => {
+        let index = getCurrentSlideIndex();
+        index = (index + 1) % slides.length;
+        scrollToSlide(index);
+        setupAutoSlide();
+    });
+
+    indicators.forEach((indicator, idx) => {
+        indicator.addEventListener('click', () => {
+            scrollToSlide(idx);
+            setupAutoSlide();
+        });
+    });
+});
+
+</script>

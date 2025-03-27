@@ -1,0 +1,325 @@
+{%- render 'section-spacing-collapsing' -%}
+
+{%- assign text_position = section.settings.text_position -%}
+
+<style>
+  #shopify-section-{{ section.id }} {
+    --section-stack-intro: {% if text_position == 'center' %}66.6667%{% elsif section.settings.contact_form_size == 'small' %}50%{% else %}41.6667%{% endif %};
+    --section-stack-main: {% if section.settings.contact_form_size == 'small' %}50%{% else %}58.3334%{% endif %};
+  }
+</style>
+
+<div {% render 'section-properties' %}>
+  {%- assign text_position = section.settings.text_position -%}
+
+  <div class="section-stack {% if text_position != 'center' %}section-stack--horizontal{% else %}section-stack--center{% endif %} {% if text_position == 'end' %}section-stack--reverse{% endif %}">
+    {%- capture content -%}
+      {%- if section.settings.subheading != blank -%}
+        <p class="bold">{{ section.settings.subheading | escape }}</p>
+      {%- endif -%}
+
+      {%- if section.settings.title != blank -%}
+        <h2 class="h2">
+          {%- render 'styled-text', content: section.settings.title, text_color: section.settings.heading_color, gradient: section.settings.heading_gradient -%}
+        </h2>
+      {%- endif -%}
+
+      {{- section.settings.content -}}
+    {%- endcapture -%}
+
+    {%- if content != blank -%}
+      <div class="section-stack__intro">
+        <div class="prose {% if text_position == 'center' %}text-center{% endif %}">
+          {{- content -}}
+        </div>
+      </div>
+    {%- endif -%}
+
+    <div class="section-stack__main">
+      <div
+        {% render 'surface',
+          class: 'contact-form rounded',
+          background: section.settings.contact_background,
+          text_color: section.settings.contact_text_color,
+          background_fallback: 'bg-secondary'
+        %}
+      >
+        {%- capture contact_form_id -%}contact-form-{{ section.id }}{%- endcapture -%}
+
+        {%- form 'contact', id: contact_form_id, class: 'form' -%}
+          <div class="fieldset">
+            {%- if form.posted_successfully? -%}
+              {%- capture content -%}{{- 'contact.form.success_message' | t -}}{%- endcapture -%}
+              {%- render 'banner', status: 'success', content: content -%}
+            {%- endif -%}
+
+            {%- if form.errors -%}
+              {%- capture content -%}{{ form.errors.translated_fields[form.errors.first] | capitalize }} {{ form.errors.messages[form.errors.first] }}{%- endcapture -%}
+              {%- render 'banner', status: 'error', content: content -%}
+            {%- endif -%}
+
+            <div class="input-row">
+              {%- capture label -%}{{ 'contact.form.name' | t }}{%- endcapture -%}
+              {%- render 'input',
+                type: 'text',
+                name: 'contact[name]',
+                label: label,
+                value: customer.name,
+                required: true,
+                autocomplete: 'name'
+              -%}
+
+              {%- capture label -%}{{ 'contact.form.email' | t }}{%- endcapture -%}
+              {%- render 'input',
+                type: 'email',
+                name: 'contact[email]',
+                label: label,
+                value: customer.email,
+                required: true,
+                autocomplete: 'email'
+              -%}
+            </div>
+
+            {%- for block in section.blocks -%}
+              {%- assign field_title = block.settings.title -%}
+
+              {%- if field_title == blank -%}
+                {%- capture field_title -%}Custom field {% increment custom_field %}{%- endcapture -%}
+              {%- endif -%}
+
+              {%- capture name -%}contact[{{ field_title | escape }}]{%- endcapture -%}
+
+              {%- if block.type == 'text' -%}
+                {%- if block.settings.use_long_text -%}
+                  {%- render 'input',
+                    name: name,
+                    label: block.settings.title,
+                    required: block.settings.required,
+                    multiline: 4,
+                    block: block
+                  -%}
+                {%- else -%}
+                  {%- render 'input',
+                    type: 'text',
+                    name: name,
+                    label: block.settings.title,
+                    required: block.settings.required,
+                    block: block
+                  -%}
+                {%- endif -%}
+              {%- elsif block.type == 'dropdown' and block.settings.values != blank -%}
+                {%- assign values = block.settings.values | split: ',' -%}
+
+                {%- capture options -%}
+                  <option value="" disabled selected></option>
+                  {%- for value in values -%}
+                    <option value="{{ value | strip | escape }}">{{ value | strip | escape }}</option>
+                  {%- endfor -%}
+                {%- endcapture -%}
+
+                {%- render 'select',
+                  options: options,
+                  name: name,
+                  label: block.settings.title,
+                  required: true,
+                  block: block
+                -%}
+              {%- endif -%}
+            {%- endfor -%}
+
+            {%- capture label -%}{{ 'contact.form.message' | t }}{%- endcapture -%}
+            {%- render 'input', name: 'contact[body]', label: label, multiline: 4, required: true -%}
+          </div>
+
+          <div class="{% if text_position == 'center' %}justify-self-center{% else%}justify-self-start{% endif %}">
+            {%- capture button_content -%}{{ 'contact.form.submit' | t }}{%- endcapture -%}
+            {%- render 'button',
+              content: button_content,
+              type: 'submit',
+              size: 'xl',
+              background: section.settings.button_background,
+              text_color: section.settings.button_text_color
+            -%}
+          </div>
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+</div>
+{% schema %}
+{
+  "name": "Contato",
+  "class": "shopify-section--contact",
+  "tag": "section",
+  "disabled_on": {
+    "groups": ["header", "custom.overlay"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Largura total",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subtítulo",
+      "default": "Contate-Nos"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Título",
+      "default": "Você tem alguma dúvida?"
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": "Conteúdo"
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "label": "Posição do texto",
+      "options": [
+        {
+          "value": "start",
+          "label": "Esquerda"
+        },
+        {
+          "value": "center",
+          "label": "Centro"
+        },
+        {
+          "value": "end",
+          "label": "Direita"
+        }
+      ],
+      "default": "start"
+    },
+    {
+      "type": "select",
+      "id": "contact_form_size",
+      "label": "Tamanho do formulário de contato",
+      "options": [
+        {
+          "value": "small",
+          "label": "Pequeno"
+        },
+        {
+          "value": "large",
+          "label": "Grande"
+        }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "header",
+      "content": "Cores da seção",
+      "info": "Gradiente substitui cores sólidas quando configurado."
+    },
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Fundo"
+    },
+    {
+      "type": "color_background",
+      "id": "background_gradient",
+      "label": "Gradiente de fundo"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Texto"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Cor do título"
+    },
+    {
+      "type": "color_background",
+      "id": "heading_gradient",
+      "label": "Gradiente do título"
+    },
+    {
+      "type": "header",
+      "content": "Cores do bloco de contato",
+      "info": "Gradiente substitui cores sólidas quando configurado."
+    },
+    {
+      "type": "color",
+      "id": "contact_background",
+      "label": "Fundo"
+    },
+    {
+      "type": "color",
+      "id": "contact_text_color",
+      "label": "Texto"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Fundo do botão"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Texto do botão"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text",
+      "name": "Campo de texto",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Nome",
+          "default": "Campo personalizado"
+        },
+        {
+          "type": "checkbox",
+          "id": "use_long_text",
+          "label": "Usar texto longo",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "required",
+          "label": "Obrigatório",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "dropdown",
+      "name": "Dropdown",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Nome",
+          "default": "Campo personalizado"
+        },
+        {
+          "type": "text",
+          "id": "values",
+          "label": "Valores",
+          "info": "Separe cada valor por uma vírgula.",
+          "default": "valor 1, valor 2, valor 3"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Formulário de contato",
+      "settings": {}
+    }
+  ]
+}
+{% endschema %}
