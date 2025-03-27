@@ -87,11 +87,124 @@
         "background_gradient": "",
         "text_color": ""
       }
+    },
+    "featured_collection_fgpiE4": {
+      "type": "featured-collection",
+      "settings": {
+        "collection": "",
+        "products": [],
+        "full_width": true,
+        "stack_products": true,
+        "show_progress_bar": false,
+        "products_count": 6,
+        "products_per_row_mobile": "2",
+        "products_per_row_desktop": 4,
+        "subheading": "",
+        "title": "+ VENDIDOS 💙",
+        "content": "<p>Explore nossa deslumbrante coleção de conforto!</p>",
+        "link_url": "",
+        "link_text": "Ver tudo",
+        "background": "",
+        "background_gradient": "",
+        "text_color": "",
+        "heading_color": "",
+        "heading_gradient": "",
+        "product_card_background": "",
+        "product_card_text_color": ""
+      }
+    },
+    "image_with_text_overlay_aTPpyn": {
+      "type": "image-with-text-overlay",
+      "settings": {
+        "full_width": true,
+        "allow_transparent_header": false,
+        "enable_parallax": false,
+        "image_size": "auto",
+        "mobile_text_position": "place-self-center text-center",
+        "desktop_text_position": "sm:place-self-center sm:text-center",
+        "text_color": "#ffffff",
+        "overlay_color": "#000000",
+        "overlay_opacity": 30
+      }
+    },
+    "featured_collection_QEhAYU": {
+      "type": "featured-collection",
+      "settings": {
+        "collection": "",
+        "products": [],
+        "full_width": true,
+        "stack_products": true,
+        "show_progress_bar": false,
+        "products_count": 6,
+        "products_per_row_mobile": "2",
+        "products_per_row_desktop": 4,
+        "subheading": "",
+        "title": "+ VENDIDOS 💙",
+        "content": "<p>Explore nossa deslumbrante coleção de conforto!</p>",
+        "link_url": "",
+        "link_text": "Ver tudo",
+        "background": "",
+        "background_gradient": "",
+        "text_color": "",
+        "heading_color": "",
+        "heading_gradient": "",
+        "product_card_background": "",
+        "product_card_text_color": ""
+      }
+    },
+    "video_L8L6PM": {
+      "type": "video",
+      "blocks": {
+        "play_4XMyQw": {
+          "type": "play",
+          "settings": {}
+        },
+        "heading_a3Bek9": {
+          "type": "heading",
+          "settings": {
+            "text": "Vídeo",
+            "heading_tag": "h1"
+          }
+        }
+      },
+      "block_order": [
+        "play_4XMyQw",
+        "heading_a3Bek9"
+      ],
+      "settings": {
+        "full_width": true,
+        "allow_transparent_header": false,
+        "autoplay": false,
+        "video_size": "auto",
+        "external_video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+        "text_color": "#ffffff",
+        "overlay_color": "#000000",
+        "overlay_opacity": 30
+      }
+    },
+    "image_with_text_overlay_Y94Nbd": {
+      "type": "image-with-text-overlay",
+      "settings": {
+        "full_width": true,
+        "allow_transparent_header": false,
+        "enable_parallax": false,
+        "image_size": "auto",
+        "mobile_text_position": "place-self-center text-center",
+        "desktop_text_position": "sm:place-self-center sm:text-center",
+        "text_color": "#ffffff",
+        "overlay_color": "#000000",
+        "overlay_opacity": 30
+      }
     }
   },
   "order": [
     "main",
     "image_with_text_overlay_zMKpEd",
-    "text_with_icons_mAVDQm"
+    "text_with_icons_mAVDQm",
+    "featured_collection_fgpiE4",
+    "image_with_text_overlay_aTPpyn",
+    "featured_collection_QEhAYU",
+    "video_L8L6PM",
+    "image_with_text_overlay_Y94Nbd"
   ]
 }
