@@ -134,7 +134,7 @@
     "featured_collection_QEhAYU": {
       "type": "featured-collection",
       "settings": {
-        "collection": "",
+        "collection": "lancamentos",
         "products": [],
         "full_width": true,
         "stack_products": true,
