@@ -181,10 +181,10 @@
         "autoplay": true,
         "video_size": "fill",
         "video": "shopify://files/videos/dd9041f7b5214091b7c99116a8b38bc6.HD-1080p-7.2Mbps-38455080.mp4",
-        "external_video_url": "https://www.youtube.com/watch?v=_9VUPq3SxOc",
+        "external_video_url": "",
         "text_color": "#ffffff",
         "overlay_color": "#000000",
-        "overlay_opacity": 30
+        "overlay_opacity": 12
       }
     },
     "image_with_text_overlay_Y94Nbd": {
