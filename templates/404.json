@@ -158,23 +158,6 @@
     },
     "video_L8L6PM": {
       "type": "video",
-      "blocks": {
-        "play_4XMyQw": {
-          "type": "play",
-          "settings": {}
-        },
-        "heading_a3Bek9": {
-          "type": "heading",
-          "settings": {
-            "text": "Vídeo",
-            "heading_tag": "h1"
-          }
-        }
-      },
-      "block_order": [
-        "play_4XMyQw",
-        "heading_a3Bek9"
-      ],
       "settings": {
         "full_width": true,
         "allow_transparent_header": false,
