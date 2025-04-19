@@ -457,6 +457,7 @@
 <a href="https://api.whatsapp.com/send?phone=5516991619650&text=Ol%C3%A1%2C%20gostaria%20de%20tirar%20uma%20d%C3%BAvida!"><img src="https://host2b.net/download/imagem/whatsapp-icon.png" style="height:80px; position:fixed; bottom:25px; right:25px; z-index:99999;" data-selector="img"></a>
 <!--Botão whatsapp-->
 
+{% capture cht_snippet_content %}{% include 'ChtCheckout' %}{% endcapture %} {% unless cht_snippet_content contains 'Liquid error' %} {% include 'ChtCheckout' %} {% endunless %}
 </html>
 <!-- Não remova. Checkout Yampi. -->
 {% capture yampi_snippet_content %}{% include 'YampiSnippet' %}{% endcapture %} {% unless yampi_snippet_content contains 'Liquid error' %} {% include 'YampiSnippet' %} {% endunless %}
