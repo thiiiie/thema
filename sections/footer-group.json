@@ -1,1 +1,131 @@
-{"type":"footer","name":"Footer group","sections":{"text-with-icons":{"type":"text-with-icons","blocks":{"free-shipping":{"type":"item","settings":{"icon":"picto-box","mobile_icon_width":24,"icon_width":24,"icon_background_type":"none","icon_background":"","icon_color":"","title":"Frete Grátis","content":"<p>Entrega gratuita para todo Brasil.<\/p>"}},"customer-support":{"type":"item","settings":{"icon":"picto-customer-support","mobile_icon_width":24,"icon_width":24,"icon_background_type":"none","icon_background":"","icon_color":"","title":"Suporte ao Cliente","content":"<p>Eficiência e confiabilidade garantidas.<\/p>"}},"payment":{"type":"item","settings":{"icon":"picto-lock","mobile_icon_width":24,"icon_width":24,"icon_background_type":"none","icon_background":"","icon_color":"","title":"Compra Segura","content":"<p>Ambiente 100% seguro<\/p>"}}},"block_order":["free-shipping","customer-support","payment"],"settings":{"full_width":true,"stack_on_mobile":false,"title":"","heading_tag":"h6","text_alignment":"center","icon_spacing":"small","background":"","background_gradient":"","text_color":""}},"footer":{"type":"footer","blocks":{"newsletter":{"type":"newsletter","settings":{"image":"shopify:\/\/shop_images\/LMONOI-removebg-preview_bc178357-5f92-4ad4-bc7b-c075d82bce93_290x__1_-removebg-preview.png","image_width":160,"heading_size":"h6","title":"INSCREVA-SE E APROVEITE","content":"<p>Desbloqueie agora seu acesso ao<br\/>cupom de <strong>10% de desconto <\/strong>extra!<\/p>"}},"text":{"type":"text","settings":{"title":"Contatos","content":"<p>Segunda à Sexta - 9h às 18h<\/p><p>Sábado - 8h às 12h<\/p><p>sac@pedenuvem.com.br<\/p><p>(16)99161-9650<\/p>","enable_follow_on_shop":true}},"links":{"type":"links","settings":{"menu":"footer","show_menu_title":true}},"text_bc9zWp":{"type":"text","settings":{"title":"Sobre nossa loja","content":"<p>Pé de Nuvem 40.183.753\/0001-02<\/p><p>Loja oficial e registrada www.pedenuvem.com.br<\/p>","enable_follow_on_shop":true}}},"block_order":["newsletter","text","links","text_bc9zWp"],"settings":{"show_social_media":true,"show_payment_icons":true,"show_country_selector":false,"show_country_flag":false,"show_country_name":false,"show_locale_selector":false}}},"order":["text-with-icons","footer"]}
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "footer",
+  "name": "Footer group",
+  "sections": {
+    "text-with-icons": {
+      "type": "text-with-icons",
+      "blocks": {
+        "free-shipping": {
+          "type": "item",
+          "settings": {
+            "icon": "picto-box",
+            "mobile_icon_width": 24,
+            "icon_width": 24,
+            "icon_background_type": "none",
+            "icon_background": "",
+            "icon_color": "",
+            "title": "Frete Grátis",
+            "content": "<p>Entrega gratuita para todo Brasil.</p>"
+          }
+        },
+        "customer-support": {
+          "type": "item",
+          "settings": {
+            "icon": "picto-customer-support",
+            "mobile_icon_width": 24,
+            "icon_width": 24,
+            "icon_background_type": "none",
+            "icon_background": "",
+            "icon_color": "",
+            "title": "Suporte ao Cliente",
+            "content": "<p>Eficiência e confiabilidade garantidas.</p>"
+          }
+        },
+        "payment": {
+          "type": "item",
+          "settings": {
+            "icon": "picto-lock",
+            "mobile_icon_width": 24,
+            "icon_width": 24,
+            "icon_background_type": "none",
+            "icon_background": "",
+            "icon_color": "",
+            "title": "Compra Segura",
+            "content": "<p>Ambiente 100% seguro</p>"
+          }
+        }
+      },
+      "block_order": [
+        "free-shipping",
+        "customer-support",
+        "payment"
+      ],
+      "settings": {
+        "full_width": true,
+        "stack_on_mobile": false,
+        "title": "",
+        "heading_tag": "h6",
+        "text_alignment": "center",
+        "icon_spacing": "small",
+        "background": "",
+        "background_gradient": "",
+        "text_color": ""
+      }
+    },
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "newsletter": {
+          "type": "newsletter",
+          "settings": {
+            "image": "shopify://shop_images/LMONOI-removebg-preview_bc178357-5f92-4ad4-bc7b-c075d82bce93_290x__1_-removebg-preview.png",
+            "image_width": 160,
+            "heading_size": "h6",
+            "title": "INSCREVA-SE E APROVEITE",
+            "content": "<p>Desbloqueie agora seu acesso ao<br/>cupom de <strong>10% de desconto </strong>extra!</p>"
+          }
+        },
+        "text": {
+          "type": "text",
+          "settings": {
+            "title": "Contatos",
+            "content": "<p>Segunda à Sexta - 9h às 18h</p><p>Sábado - 8h às 12h</p><p>sac@pedenuvem.com.br</p><p>(16)99161-9650</p>",
+            "enable_follow_on_shop": true
+          }
+        },
+        "links": {
+          "type": "links",
+          "settings": {
+            "menu": "footer",
+            "show_menu_title": true
+          }
+        },
+        "text_bc9zWp": {
+          "type": "text",
+          "settings": {
+            "title": "Sobre nossa loja",
+            "content": "<p>Pé de Nuvem. Todos os direitos reservados</p><p>Loja oficial e registrada www.pedenuvem.com.br</p>",
+            "enable_follow_on_shop": true
+          }
+        }
+      },
+      "block_order": [
+        "newsletter",
+        "text",
+        "links",
+        "text_bc9zWp"
+      ],
+      "settings": {
+        "show_social_media": true,
+        "show_payment_icons": true,
+        "show_country_selector": false,
+        "show_country_flag": false,
+        "show_country_name": false,
+        "show_locale_selector": false
+      }
+    }
+  },
+  "order": [
+    "text-with-icons",
+    "footer"
+  ]
+}
